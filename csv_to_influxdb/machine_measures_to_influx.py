@@ -142,7 +142,7 @@ def loadCsv(inputfilename, servername, user, password, dbname, metric,
 def parse_args():
     parser = argparse.ArgumentParser(description='Csv to influxdb.')
 
-    parser.add_argument("-path", "--path_execution", nargs='?', default= 'wt_performance/project-example/config',
+    parser.add_argument("-path", "--path_execution", nargs='?', default= 'performance_framework/project-example/config',
                         help="Path to properties.ini")
 
     parser.add_argument('-i', '--input', nargs='?', required=True,

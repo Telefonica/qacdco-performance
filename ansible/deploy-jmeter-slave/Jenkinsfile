@@ -62,8 +62,8 @@ node (jenkinsInstance["qacdoMasterInstance"]) {
                         echo "Preparing environment if needed ..."
                         echo "        Installing ansible"
                         sh "pip install ansible --upgrade --user"
-                        sh "echo '[jMeter_nodes]\n perf0 ansible_host=${INJECTOR_HOST} ansible_port=22 ansible_user=${INJECTOR_USER}' > ./wt_performance/ansible/deploy-jmeter-slave/inventories/host"
-                        sh "cat ./wt_performance/ansible/deploy-jmeter-slave/inventories/host"
+                        sh "echo '[jMeter_nodes]\n perf0 ansible_host=${INJECTOR_HOST} ansible_port=22 ansible_user=${INJECTOR_USER}' > ./performance_framework/ansible/deploy-jmeter-slave/inventories/host"
+                        sh "cat ./performance_framework/ansible/deploy-jmeter-slave/inventories/host"
 
                     }
                     
@@ -71,7 +71,7 @@ node (jenkinsInstance["qacdoMasterInstance"]) {
             stage('Deployment'){
                 try{
                     echo "Deploying injector ..."
-                    sh "~/.local/bin/ansible-playbook ./wt_performance/ansible/deploy-jmeter-slave/deploy-jmeter-slave.yml -i ./wt_performance/ansible/deploy-jmeter-slave/inventories/host"
+                    sh "~/.local/bin/ansible-playbook ./performance_framework/ansible/deploy-jmeter-slave/deploy-jmeter-slave.yml -i ./performance_framework/ansible/deploy-jmeter-slave/inventories/host"
                 }
                 catch(error){
                        currentBuild.result = 'UNSTABLE'

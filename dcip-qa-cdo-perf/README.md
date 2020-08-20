@@ -11,5 +11,5 @@ Build the image with:
 ```
 docker build -f dcip-qa-cdo-perf/Dockerfile .
 ```
-It's really important to execute this command while being in `qacdco-tools/wt_performance` so the build context is 
+It's really important to execute this command while being in `qacdco-tools/performance_framework` so the build context is 
 correct.

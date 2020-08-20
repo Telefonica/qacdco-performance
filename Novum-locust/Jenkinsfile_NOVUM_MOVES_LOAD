@@ -59,8 +59,8 @@ node (jenkinsInstance["perfMasterInstance"]) {
             stage('Environment'){
 
                 echo "Preparing environment ..."
-                env.PERFORMANCE_PROJECT_PATH='./wt_performance/Novum-locust'
-                env.PERFORMANCE_SCRIPTS_PATH='./wt_performance/scripts'
+                env.PERFORMANCE_PROJECT_PATH='./performance_framework/Novum-locust'
+                env.PERFORMANCE_SCRIPTS_PATH='./performance_framework/scripts'
                 env.PERFORMANCE_OUTPUT_FORMAT='csv'
                 env.TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S', returnStdout: true ).trim()
                 env.QA_REPORTER_ENVIRONMENT="${QA_REPORTER_ENVIRONMENT}"
