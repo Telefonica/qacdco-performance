@@ -38,7 +38,7 @@ Pendiente
 Pasos para parametrizar por línea de comandos las direcciones del SUT
 ---------------------------------------------------------------------
 
-* Añadir en el fichero  _performance_framework/project-example/Jenkinsfile_ los comandos
+* Añadir en el fichero  _wt_performance/project-example/Jenkinsfile_ los comandos
   ~~~
   parameters([
         string(defaultValue: "master", description: 'Branch to build', name: 'GIT_BRANCH'),
@@ -58,7 +58,7 @@ Pasos para parametrizar por línea de comandos las direcciones del SUT
         echo "Running ${env.BUILD_ID} on ${env.PERFORMANCE_SUT_USERNAMES}"
   ~~~
 
-* Reemplazar en el fichero  _performance_framework/project-example/run-jmeter-remote-slave.sh_ la línea
+* Reemplazar en el fichero  _wt_performance/project-example/run-jmeter-remote-slave.sh_ la línea
   ~~~
   sudo python MachineMeasuresRetrieval.py -s ${START_TIME} -e ${END_TIME} -path /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}
   ~~~

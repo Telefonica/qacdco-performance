@@ -65,7 +65,7 @@ node (jenkinsInstance["perfMasterInstance"]) {
                     env.PERFORMANCE_INJECTOR_HOST = sh (script: "curl -sk https://qacdco.d-consumer.com/agora/guma2/api/servers/${PERFORMANCE_INJECTOR_HOST}/ | grep -oP \'(?<=external_ip\".{1}\")[0-9.]*\'", returnStdout: true ).trim()
             }
                 echo "Preparing environment if needed ..."
-                env.PERFORMANCE_PROJECT_PATH='./performance_framework/project-example'
+                env.PERFORMANCE_PROJECT_PATH='./wt_performance/project-example'
                 env.PERFORMANCE_OUTPUT_FORMAT='csv'
                 env.TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S', returnStdout: true ).trim()
                 env.OUTPUT_FOLDER="./output/${PERFORMANCE_JMETER_SCRIPT_NAME}_${PERFORMANCE_INJECTOR_HOST}_${TIMESTAMP}"
