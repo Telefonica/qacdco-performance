@@ -8,7 +8,7 @@ https://www.blazemeter.com/blog/how-to-use-the-jenkins-performance-plugin
 https://github.com/jenkinsci/performance-plugin/blob/master/src/main/java/hudson/plugins/performance/PerformancePublisher.java
 */
 env.JOB_NAME = "${env.JOB_NAME.replaceFirst('.+?/', '').replace('%2F', '/')}"
-url_repo = 'git@github.com:Telefonica/qacdco-tools.git'
+url_repo = 'git@github.com:Telefonica/qacdco-performance.git'
 class_repo = 'GithubWeb'
 /* Set your docker image, you can set several different images*/
 def jenkinsInstance = [
