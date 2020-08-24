@@ -2,3 +2,4 @@
 vault_pass.txt
 *.retry
 tools/redmine/issues_by_date.txt
+.DS_Store

@@ -2,19 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6bc0f897-6c9e-405b-8550-827a36c1fcc5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/Novum-locust/Jenkinsfile_NOVUM_MOVES_LOAD" beforeDir="false" afterPath="$PROJECT_DIR$/Novum-locust/Jenkinsfile_NOVUM_MOVES_LOAD" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Novum-locust/Jenkinsfile_NOVUM_MOVES_STRESS" beforeDir="false" afterPath="$PROJECT_DIR$/Novum-locust/Jenkinsfile_NOVUM_MOVES_STRESS" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ansible/deploy-jmeter-slave/Jenkinsfile" beforeDir="false" afterPath="$PROJECT_DIR$/ansible/deploy-jmeter-slave/Jenkinsfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/csv_to_influxdb/machine_measures_to_influx.py" beforeDir="false" afterPath="$PROJECT_DIR$/csv_to_influxdb/machine_measures_to_influx.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dcip-qa-cdo-perf/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/dcip-qa-cdo-perf/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/machine_measures_retrieval/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/machine_measures_retrieval/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/project-example/Jenkinsfile" beforeDir="false" afterPath="$PROJECT_DIR$/project-example/Jenkinsfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -31,6 +32,11 @@
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="PyConsoleConfigurable.Python Console" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/wt_performance" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
