@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="3.2" jmeter="3.3 r1808647">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Performance Test Project" enabled="true">
+      <stringProp name="TestPlan.comments">CDO QA Performance Test Project</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="Variables definidas por el Usuario" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Variables Initialization and configuration" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Controlador Bucle" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1452790472000</longProp>
+        <longProp name="ThreadGroup.end_time">1452790472000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="User Behaviour Model - Global Path Counters init" enabled="true">
+          <boolProp name="resetInterpreter">false</boolProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="script">// PATH SELECTION | User Behaviour Model
+// Counters
+import org.apache.jmeter.util.JMeterUtils;
+JMeterUtils.setProperty(&quot;path.counter.0&quot;, &quot;0&quot;);	
+JMeterUtils.setProperty(&quot;path.counter.1&quot;, &quot;0&quot;);
+JMeterUtils.setProperty(&quot;path.counter.2&quot;, &quot;0&quot;);
+JMeterUtils.setProperty(&quot;path.counter.3&quot;, &quot;0&quot;);
+JMeterUtils.setProperty(&quot;path.counter.4&quot;, &quot;0&quot;);
+JMeterUtils.setProperty(&quot;path.counter.5&quot;, &quot;0&quot;);
+
+return</stringProp>
+        </BeanShellPostProcessor>
+        <hashTree/>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Behaviour Model - Balancing Rates Definition" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="path.rate.0" elementType="Argument">
+              <stringProp name="Argument.name">path.rate.0</stringProp>
+              <stringProp name="Argument.value">20</stringProp>
+              <stringProp name="Argument.desc">[path.rate.0]% of requests must go through path 0 :</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="path.rate.1" elementType="Argument">
+              <stringProp name="Argument.name">path.rate.1</stringProp>
+              <stringProp name="Argument.value">50</stringProp>
+              <stringProp name="Argument.desc">[path.rate.1]% of requests must go through path 1 : </stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="path.rate.2" elementType="Argument">
+              <stringProp name="Argument.name">path.rate.2</stringProp>
+              <stringProp name="Argument.value">30</stringProp>
+              <stringProp name="Argument.desc">[path.rate.2]% of requests must go through path 2 : </stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="path.rate.3" elementType="Argument">
+              <stringProp name="Argument.name">path.rate.3</stringProp>
+              <stringProp name="Argument.value">0</stringProp>
+              <stringProp name="Argument.desc">[path.rate.3]% of requests must go through path 3 : </stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="path.rate.4" elementType="Argument">
+              <stringProp name="Argument.name">path.rate.4</stringProp>
+              <stringProp name="Argument.value">0</stringProp>
+              <stringProp name="Argument.desc">[path.rate.4]% of requests must go through path 4 : </stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="path.rate.5" elementType="Argument">
+              <stringProp name="Argument.name">path.rate.5</stringProp>
+              <stringProp name="Argument.value">0</stringProp>
+              <stringProp name="Argument.desc">[path.rate.5]% of requests must go through path 5 : </stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+          <stringProp name="TestPlan.comments">Models the user behaviour choosing the % of requests that must go for each path</stringProp>
+        </Arguments>
+        <hashTree/>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Timers and Timeouts" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="natural.steps.timer" elementType="Argument">
+              <stringProp name="Argument.name">natural.steps.timer</stringProp>
+              <stringProp name="Argument.value">1000</stringProp>
+              <stringProp name="Argument.desc">Time between steps (human natural behaviour)</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="small.random.timer" elementType="Argument">
+              <stringProp name="Argument.name">small.random.timer</stringProp>
+              <stringProp name="Argument.value">1000</stringProp>
+              <stringProp name="Argument.desc">Small random timer</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="medium.random.timer" elementType="Argument">
+              <stringProp name="Argument.name">medium.random.timer</stringProp>
+              <stringProp name="Argument.value">2000</stringProp>
+              <stringProp name="Argument.desc">Medium random timer</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="big.random.timer" elementType="Argument">
+              <stringProp name="Argument.name">big.random.timer</stringProp>
+              <stringProp name="Argument.value">5000</stringProp>
+              <stringProp name="Argument.desc">Big random timer</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="timeout" elementType="Argument">
+              <stringProp name="Argument.name">timeout</stringProp>
+              <stringProp name="Argument.value">10000</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+              <stringProp name="Argument.desc">Timeout</stringProp>
+            </elementProp>
+          </collectionProp>
+          <stringProp name="TestPlan.comments">Different timer to simulate user pauses (normally) </stringProp>
+        </Arguments>
+        <hashTree/>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Connection Variables [Redirected Host PRO]" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="protocol" elementType="Argument">
+              <stringProp name="Argument.name">protocol</stringProp>
+              <stringProp name="Argument.value">http</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+              <stringProp name="Argument.desc">Protocol</stringProp>
+            </elementProp>
+            <elementProp name="server" elementType="Argument">
+              <stringProp name="Argument.name">server</stringProp>
+              <stringProp name="Argument.value">172.31.14.234</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+              <stringProp name="Argument.desc">Server</stringProp>
+            </elementProp>
+            <elementProp name="port" elementType="Argument">
+              <stringProp name="Argument.name">port</stringProp>
+              <stringProp name="Argument.value">5000</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+              <stringProp name="Argument.desc">Port</stringProp>
+            </elementProp>
+            <elementProp name="basepath" elementType="Argument">
+              <stringProp name="Argument.name">basepath</stringProp>
+              <stringProp name="Argument.value">/api/v1.0</stringProp>
+              <stringProp name="Argument.desc">Common Path</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="auth.user" elementType="Argument">
+              <stringProp name="Argument.name">auth.user</stringProp>
+              <stringProp name="Argument.value">performance</stringProp>
+              <stringProp name="Argument.desc">User</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="auth.pass" elementType="Argument">
+              <stringProp name="Argument.name">auth.pass</stringProp>
+              <stringProp name="Argument.value">superpassword</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+              <stringProp name="Argument.desc">Password</stringProp>
+            </elementProp>
+          </collectionProp>
+          <stringProp name="TestPlan.comments">Example of configuration for one environment (in this case PRE)</stringProp>
+        </Arguments>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Threads Group: Paths execution" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">startnextloop</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Controlador Bucle" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">20</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1552414600000</longProp>
+        <longProp name="ThreadGroup.end_time">1552414600000</longProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">120</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Accept</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <AuthManager guiclass="AuthPanel" testclass="AuthManager" testname="HTTP Basic Authorization Manager" enabled="true">
+          <collectionProp name="AuthManager.auth_list">
+            <elementProp name="" elementType="Authorization">
+              <stringProp name="Authorization.url">${protocol}://${server}:${port}</stringProp>
+              <stringProp name="Authorization.username">${auth.user}</stringProp>
+              <stringProp name="Authorization.password">${auth.pass}</stringProp>
+              <stringProp name="Authorization.domain"></stringProp>
+              <stringProp name="Authorization.realm"></stringProp>
+            </elementProp>
+          </collectionProp>
+        </AuthManager>
+        <hashTree/>
+        <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="User Behaviour Model - Path Selector script" enabled="true">
+          <stringProp name="TestPlan.comments">User Behaviour Model. This script is in chage of managing the path to be executed based on the configuraon of Balancing Rates variables</stringProp>
+          <stringProp name="BeanShellSampler.query">// Validating Rates
+rate0 = Integer.parseInt(vars.get(&quot;path.rate.0&quot;));
+rate1 = Integer.parseInt(vars.get(&quot;path.rate.1&quot;));
+rate2 = Integer.parseInt(vars.get(&quot;path.rate.2&quot;));
+rate3 = Integer.parseInt(vars.get(&quot;path.rate.3&quot;));
+rate4 = Integer.parseInt(vars.get(&quot;path.rate.4&quot;));
+rate5 = Integer.parseInt(vars.get(&quot;path.rate.5&quot;));
+vars.put(&quot;random.path&quot;, &quot;-1&quot;);
+if(rate0 + rate1 + rate2 + rate3 + rate4 + rate5 != 100){
+  return;
+}
+
+// Recovering JMeter Variables
+import org.apache.jmeter.util.JMeterUtils;
+counter_0=Integer.parseInt(JMeterUtils.getPropDefault(&quot;path.counter.0&quot;, &quot;0&quot;)); 
+counter_1=Integer.parseInt(JMeterUtils.getPropDefault(&quot;path.counter.1&quot;, &quot;0&quot;));
+counter_2=Integer.parseInt(JMeterUtils.getPropDefault(&quot;path.counter.2&quot;, &quot;0&quot;)); 
+counter_3=Integer.parseInt(JMeterUtils.getPropDefault(&quot;path.counter.3&quot;, &quot;0&quot;));
+counter_4=Integer.parseInt(JMeterUtils.getPropDefault(&quot;path.counter.4&quot;, &quot;0&quot;)); 
+counter_5=Integer.parseInt(JMeterUtils.getPropDefault(&quot;path.counter.5&quot;, &quot;0&quot;));
+
+// Getting a random value between 0 and 100
+int rnd = Math.random() * 100;
+vars.put(&quot;random.value&quot;, String.valueOf(rnd));
+
+// Chossing path...
+//Path 0
+int max = rate0;
+if (rate0 &gt; 0 &amp;&amp; rnd &lt;= max) { 
+  vars.put(&quot;random.path&quot;, &quot;0&quot;); 
+  counter_0 = counter_0 + 1;
+  JMeterUtils.setProperty(&quot;path.counter.0&quot;, counter_0.toString());
+  return;
+}
+
+//Path 1
+max = max + rate1;
+if (rate1 &gt; 0 &amp;&amp; rnd &lt;= max) { 
+  vars.put(&quot;random.path&quot;, &quot;1&quot;);
+  counter_1 = counter_1 + 1;
+  JMeterUtils.setProperty(&quot;path.counter.1&quot;, counter_1.toString());
+  return; 
+}
+
+//Path 2
+max = max + rate2;
+if (rate2 &gt; 0 &amp;&amp; rnd &lt;= max) { 
+  vars.put(&quot;random.path&quot;, &quot;2&quot;);
+  counter_2 = counter_2 + 1;
+  JMeterUtils.setProperty(&quot;path.counter.2&quot;, counter_2.toString());
+  return; 
+}
+
+//Path 3
+max = max + rate3;
+if (rate3 &gt; 0 &amp;&amp; rnd &lt;= max) { 
+  vars.put(&quot;random.path&quot;, &quot;3&quot;); 
+  counter_3 = counter_3 + 1;
+  JMeterUtils.setProperty(&quot;path.counter.3&quot;, counter_3.toString());
+  return;
+}
+
+//Path 4
+max = max + rate4;
+if (rate4 &gt; 0 &amp;&amp; rnd &lt;= max) { 
+  vars.put(&quot;random.path&quot;, &quot;4&quot;);
+  counter_4 = counter_4 + 1;
+  JMeterUtils.setProperty(&quot;path.counter.4&quot;, counter_4.toString());
+  return; 
+}
+
+//Path 5
+max = max + rate5;
+if (rate5 &gt; 0 &amp;&amp; rnd &lt;= max) { 
+  vars.put(&quot;random.path&quot;, &quot;5&quot;);
+  counter_5 = counter_5 + 1;
+  JMeterUtils.setProperty(&quot;path.counter.5&quot;, counter_5.toString());
+  return; 
+}</stringProp>
+          <stringProp name="BeanShellSampler.filename"></stringProp>
+          <stringProp name="BeanShellSampler.parameters"></stringProp>
+          <boolProp name="BeanShellSampler.resetInterpreter">false</boolProp>
+        </BeanShellSampler>
+        <hashTree>
+          <BeanShellAssertion guiclass="BeanShellAssertionGui" testclass="BeanShellAssertion" testname="Total Rate Assertion" enabled="true">
+            <stringProp name="BeanShellAssertion.query">// Validating Rates
+rate0 = Integer.parseInt(vars.get(&quot;path.rate.0&quot;));
+rate1 = Integer.parseInt(vars.get(&quot;path.rate.1&quot;));
+rate2 = Integer.parseInt(vars.get(&quot;path.rate.2&quot;));
+rate3 = Integer.parseInt(vars.get(&quot;path.rate.3&quot;));
+rate4 = Integer.parseInt(vars.get(&quot;path.rate.4&quot;));
+rate5 = Integer.parseInt(vars.get(&quot;path.rate.5&quot;));
+
+if(rate0 + rate1 + rate2 + rate3 + rate4 + rate5 != 100){
+  Failure = true;
+  FailureMessage = &quot;All rates must total 100!&quot;;
+}else{
+  Failure = false;
+}</stringProp>
+            <stringProp name="BeanShellAssertion.filename"></stringProp>
+            <stringProp name="BeanShellAssertion.parameters"></stringProp>
+            <boolProp name="BeanShellAssertion.resetInterpreter">false</boolProp>
+          </BeanShellAssertion>
+          <hashTree/>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="Path 0: version and tasks list" enabled="true">
+          <stringProp name="IfController.condition">${random.path}==&quot;0&quot;</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <stringProp name="TestPlan.comments">Steps to be executed for Path0.</stringProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Version" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${server}</stringProp>
+            <stringProp name="HTTPSampler.port">${port}</stringProp>
+            <stringProp name="HTTPSampler.protocol">${protocol}</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Tasks List" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${server}</stringProp>
+            <stringProp name="HTTPSampler.port">${port}</stringProp>
+            <stringProp name="HTTPSampler.protocol">${protocol}</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/v1.0/tasks</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="Path 1: create task and get its details" enabled="true">
+          <stringProp name="IfController.condition">${random.path}==&quot;1&quot;</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <stringProp name="TestPlan.comments">Steps to be executed for Path0.</stringProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST Tasks" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{ &quot;description&quot;: &quot;This is a new Task&quot;, &quot;done&quot;: false, &quot;title&quot;: &quot;The Task title&quot; }</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${server}</stringProp>
+            <stringProp name="HTTPSampler.port">${port}</stringProp>
+            <stringProp name="HTTPSampler.protocol">${protocol}</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/v1.0/tasks</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor" enabled="true">
+              <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+              <stringProp name="RegexExtractor.refname">new_task_id</stringProp>
+              <stringProp name="RegexExtractor.regex">&quot;uri&quot;: &quot;.*/tasks/(\d*)&quot;</stringProp>
+              <stringProp name="RegexExtractor.template">$1$</stringProp>
+              <stringProp name="RegexExtractor.default"></stringProp>
+              <stringProp name="RegexExtractor.match_number"></stringProp>
+            </RegexExtractor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Tasks List" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${server}</stringProp>
+            <stringProp name="HTTPSampler.port">${port}</stringProp>
+            <stringProp name="HTTPSampler.protocol">${protocol}</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/v1.0/tasks/${new_task_id}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="Path 2: generate report" enabled="true">
+          <stringProp name="IfController.condition">${random.path}==&quot;2&quot;</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <stringProp name="TestPlan.comments">Steps to be executed for Path0.</stringProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET generate-report" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${server}</stringProp>
+            <stringProp name="HTTPSampler.port">${port}</stringProp>
+            <stringProp name="HTTPSampler.protocol">${protocol}</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/v1.0/generate-reports</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+        </hashTree>
+        <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+          <stringProp name="DurationAssertion.duration">${timeout}</stringProp>
+          <stringProp name="Assertion.scope">all</stringProp>
+          <stringProp name="TestPlan.comments">General timeout to retrieve blocked request</stringProp>
+        </DurationAssertion>
+        <hashTree/>
+      </hashTree>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="Path counters stats" enabled="true">
+        <stringProp name="filename"></stringProp>
+        <stringProp name="parameters"></stringProp>
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="script">import org.apache.jmeter.util.JMeterUtils;
+log.info(&quot;[PATH COUNTERS] &quot; +
+	    &quot;Path0: &quot; + JMeterUtils.getPropDefault(&quot;path.counter.0&quot;, &quot;0&quot;) +
+	    &quot;; Path1: &quot; + JMeterUtils.getPropDefault(&quot;path.counter.1&quot;, &quot;0&quot;) +
+	    &quot;; Path2: &quot; + JMeterUtils.getPropDefault(&quot;path.counter.2&quot;, &quot;0&quot;) +
+	    &quot;; Path3: &quot; + JMeterUtils.getPropDefault(&quot;path.counter.3&quot;, &quot;0&quot;) +
+	    &quot;; Path4: &quot; + JMeterUtils.getPropDefault(&quot;path.counter.4&quot;, &quot;0&quot;) +
+	    &quot;; Path5: &quot; + JMeterUtils.getPropDefault(&quot;path.counter.5&quot;, &quot;0&quot;));
+</stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="Results Tree" enabled="false">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>true</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>false</fieldNames>
+            <responseHeaders>true</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <threadCounts>true</threadCounts>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+        <stringProp name="TestPlan.comments">Normally used in debug tasks</stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="false">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+        <stringProp name="TestPlan.comments">General collector to build all graphical result (postproccesed results)</stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="RespTimeGraphVisualizer" testclass="ResultCollector" testname="Response Time Graph" enabled="false">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+    <WorkBench guiclass="WorkBenchGui" testclass="WorkBench" testname="Banco de Trabajo" enabled="true">
+      <boolProp name="WorkBench.save">true</boolProp>
+    </WorkBench>
+    <hashTree/>
+  </hashTree>
+</jmeterTestPlan>

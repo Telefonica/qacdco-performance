@@ -1,0 +1,110 @@
+#!groovy
+/* Copyright Telefonica Digital
+CDO QA Team <qacdo@telefonica.com>
+Support: WT-Jenkins */
+/*
+https://jenkins.io/doc/pipeline/steps/performance/
+*/
+env.JOB_NAME = "${env.JOB_NAME.replaceFirst('.+?/', '').replace('%2F', '/')}"
+url_repo = 'git@github.com:Telefonica/qacdco-tools.git'
+class_repo = 'GithubWeb'
+/* Set your docker image, you can set several different images*/
+def jenkinsInstance = [
+    perfMasterInstance:"qa-cdo-perf"
+]
+/* Define project properties */
+def executeJob = true
+def projectProperties = [
+        buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '30')),
+        disableConcurrentBuilds(),
+        parameters([
+            string(defaultValue: "davidg/novum-qareporter", description: 'Branch to build', name: 'GIT_BRANCH'),
+            choice(choices: ["No", "Yes"].join("\n"), description: 'Obtain host machine measures', name: 'PERFORMANCE_OBTAIN_HOST_MEASURES'),
+            string(defaultValue: "NOVUM_MOVES_LOAD", description: 'Project name in QA Reporter', name: 'PERFORMANCE_PROJECT_NAME'),
+            string(defaultValue: "Project_module", description: 'Project_Module', name: 'PERFORMANCE_PROJECT_MODULE'),
+            choice(choices: ["PRO", "PRE"].join("\n"), description: 'QA_REPORTER_ENVIRONMENT. ONLY FOR TESTING PURPOSE', name: 'QA_REPORTER_ENVIRONMENT'),
+            string(defaultValue: "18.231.121.210", description: 'locust master performance test IP', name: 'LOCUST_MASTER_ACCESS'),
+            string(defaultValue: "9089", description: 'LOCUST_PORT', name: 'LOCUST_PORT'),
+        ])
+]
+properties(projectProperties)
+node (jenkinsInstance["perfMasterInstance"]) {
+    wrap([$class: 'AnsiColorBuildWrapper']) {
+        try{
+            stage('Clean') {
+                cleanWs notFailBuild: true
+            }
+            stage('Checkout') {
+                // Running job info
+                echo "job name: ${env.JOB_NAME}"
+                echo "branch name: ${GIT_BRANCH}"
+                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '${GIT_BRANCH}']],
+                    browser: [$class: class_repo, repoUrl: url_repo],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[
+                        credentialsId: 'df82f4c6-562c-4f38-b77d-6d2fc4213688', //CONTINT user id to github
+                        refspec: '+refs/heads/*:refs/remotes/origin/*',  // Where you search branch to checkout
+                        url: url_repo
+                        ]]
+                    ])
+            }
+            stage('Build'){
+                echo "Building Performance Test Project ..."
+            }
+            stage('Environment'){
+
+                echo "Preparing environment ..."
+                env.PERFORMANCE_PROJECT_PATH='./wt_performance/Novum-locust'
+                env.PERFORMANCE_SCRIPTS_PATH='./wt_performance/scripts'
+                env.PERFORMANCE_OUTPUT_FORMAT='csv'
+                env.TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S', returnStdout: true ).trim()
+                env.QA_REPORTER_ENVIRONMENT="${QA_REPORTER_ENVIRONMENT}"
+                env.PERFORMANCE_ENGINE = "locust"
+            }
+
+            stage('PerformanceTesting'){
+                try{
+                    sh 'mkdir -p $PERFORMANCE_PROJECT_PATH/${PERFORMANCE_ENGINE}'
+                    sh 'chmod +x ${PERFORMANCE_SCRIPTS_PATH}/upload_to_qareporter.sh'
+
+                    echo "Trying to connect locust master via ssh"
+                    sh returnStdout: true , script: 'ssh -o StrictHostKeyChecking=no -l qsys ${LOCUST_MASTER_ACCESS} curl -s  http://localhost:${LOCUST_PORT}/qareporter_csv > ${PERFORMANCE_PROJECT_PATH}/${PERFORMANCE_ENGINE}/samples.csv'
+                    sh 'python /opt/csv_to_influxdb/make_dashboard.py -i ${PERFORMANCE_PROJECT_PATH}/${PERFORMANCE_ENGINE} --name ${PERFORMANCE_PROJECT_NAME}'
+                    sh '${PERFORMANCE_SCRIPTS_PATH}/upload_to_qareporter.sh'
+                }
+                /* Catch error in test stage for notify failed test and run other stages */
+                catch(error){
+                       currentBuild.result = 'FAILURE'
+                }
+            }
+        }
+        catch (error){
+            echo "Pipeline failed!"
+        }
+        finally {
+            // 1st Only achieve the Locust test results to obtain the small report
+            archiveArtifacts '**/*.*'
+            perfReport([
+               sourceDataFiles: '**/locust/*.csv',
+               modeEvaluation: false,
+               modeOfThreshold: true,
+               compareBuildPrevious: false,
+               configType: 'PRT',
+               percentiles: '50,90,95,99,99.9,100',
+               failBuildIfNoResultFile: true,
+               nthBuildNumber: 235,  //Baseline
+               errorUnstableThreshold: 1, //Only integers
+               errorFailedThreshold: 2, //Only integers
+               relativeUnstableThresholdNegative: 20.0, //Not used for modeOfThreshold to false
+               relativeUnstableThresholdPositive: 15.0, //Not used for modeOfThreshold to false
+               relativeFailedThresholdNegative: 50.0, //Not used for modeOfThreshold to false
+               relativeFailedThresholdPositive: 20.0 //Not used for modeOfThreshold to false
+            ])
+        }
+    }
+}

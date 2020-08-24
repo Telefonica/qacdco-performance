@@ -1,0 +1,4 @@
+Fabric==1.14.0
+configparser==3.5.0
+cryptography==2.1.4
+pycrypto==2.6.1
