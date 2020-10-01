@@ -2,7 +2,7 @@
 
 FROM dockerhub.hi.inet/dcip/qa-cdo:latest
 
-ARG JMETER_VERSION="3.3"
+ARG JMETER_VERSION="4.0"
 ENV JMETER_HOME /opt/apache-jmeter-${JMETER_VERSION}
 ENV	JMETER_BIN	${JMETER_HOME}/bin
 ENV	JMETER_DOWNLOAD_URL  https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
