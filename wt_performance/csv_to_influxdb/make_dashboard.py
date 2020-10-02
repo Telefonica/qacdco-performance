@@ -10,6 +10,8 @@ import argparse
 import requests
 import json
 
+GRAFANA_AUTH_BEARER = 'Bearer eyJrIjoiWjJlcGdxQURSMER0MzZaaHJObGhCVnp5VFlBb05PRHciLCJuIjoiUGVyZm9ybWFuY2UiLCJpZCI6MX0='
+
 def parse_args():
     parser = argparse.ArgumentParser(description='datasource influxdb & grafana.')
     parser.add_argument('-n', '--name', nargs='?', default='Performance',
