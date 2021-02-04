@@ -21,23 +21,32 @@ echo "[CDO QA Team] Performance Tests execution"
 
 # Used to separate executions
 FOLDER_ID=$(uuidgen | cut -c1-8)
-
+IFS=';' read -r -a injectors <<< "${PERFORMANCE_INJECTOR_HOSTS}"
+slavesCount=0
+FIRSTPORT=24000
+SECONDPORT=26000
+RMIPORT=25000
+HOSTS=""
 # Move into performance tests project following the structure defined by WT-Performance.
 cd ${PERFORMANCE_PROJECT_PATH:-./}
 
-echo -e "\n+++ Sending recource files if needed to JMeter Slave node ${PERFORMANCE_INJECTOR_HOST}"
-files=(jmeter/resources/*)
+for PERFORMANCE_INJECTOR_HOST in "${injectors[@]}"
+do	
+	HOSTS="$HOSTS 127.0.0.1:$(($FIRSTPORT+$slavesCount))"
+	echo -e "\n+++ Sending resource files if needed to JMeter Slave node ${PERFORMANCE_INJECTOR_HOST}"
+	files=(jmeter/resources/*)
 
-if [ ${#files[@]} -gt 0 ]; then scp ${files[@]} ubuntu@$PERFORMANCE_INJECTOR_HOST:/opt/qacdo/performance/shared_folder; fi
+	if [ ${#files[@]} -gt 0 ]; then scp ${files[@]} ubuntu@$PERFORMANCE_INJECTOR_HOST:/opt/qacdo/performance/shared_folder; fi
 
-echo -e "\n+++ Starting ssh tunnels with injector nodes (JMeter Slave node): ${PERFORMANCE_INJECTOR_HOST}"
-ssh -L 24000:127.0.0.1:24000 -L 26000:127.0.0.1:26000 -R 25000:127.0.0.1:25000 ubuntu@$PERFORMANCE_INJECTOR_HOST -fN -M -S injector-tunnel
+	echo -e "\n+++ Starting ssh tunnels with injector nodes (JMeter Slave node): ${PERFORMANCE_INJECTOR_HOST}"
+	ssh -L $(($FIRSTPORT+$slavesCount)):127.0.0.1:$FIRSTPORT -L $(($SECONDPORT+$slavesCount)):127.0.0.1:$SECONDPORT -R $RMIPORT:127.0.0.1:$RMIPORT ubuntu@$PERFORMANCE_INJECTOR_HOST -fN -M -S injector-tunnel-$slavesCount
 
-echo -e "\n+++ Checking tunnel status with JMeter Slave node ${PERFORMANCE_INJECTOR_HOST}"
-ssh -S injector-tunnel -O check ubuntu@$PERFORMANCE_INJECTOR_HOST
-
+	echo -e "\n+++ Checking tunnel status with JMeter Slave node ${PERFORMANCE_INJECTOR_HOST}"
+	ssh -S injector-tunnel-$slavesCount -O check ubuntu@$PERFORMANCE_INJECTOR_HOST
+	slavesCount=$(($slavesCount+1))
+done
 SCRIPT_NAME=${PERFORMANCE_JMETER_SCRIPT_NAME:-test_script}
-REMOTE_INJECTOR_CONFIG="-R 127.0.0.1:24000 -Jserver.rmi.ssl.disable=true -Djava.rmi.server.hostname=127.0.0.1 -Jremote_hosts=127.0.0.1:24000 -Jclient.rmi.localport=25000 -Jmode=Batch"
+REMOTE_INJECTOR_CONFIG="-R $HOSTS -Jserver.rmi.ssl.disable=true -Djava.rmi.server.hostname=127.0.0.1 -Jremote_hosts=$HOSTS -Jclient.rmi.localport=25000 -Jmode=Batch"
 OUTPUT_FORMAT="-Jjmeter.save.saveservice.output_format=${PERFORMANCE_OUTPUT_FORMAT:-csv}"
 if [ "$PERFORMANCE_OUTPUT_FORMAT" = "csv" ]; then
    GENERATE_REPORT_OPTION="-e"
@@ -59,42 +68,47 @@ START_TIME=$(date -u --date='3 minutes ago' | awk '{print $4}' |  awk '$0=substr
 echo "Start time to recollect host resources metrics: ${START_TIME}"
 jmeter -n -j ${OUTPUT_FOLDER}/jmeter/jmeter.log -l ${OUTPUT_FOLDER}/jmeter/samples.${PERFORMANCE_OUTPUT_FORMAT:-csv} -t jmeter/${SCRIPT_NAME}.jmx -o ${OUTPUT_FOLDER}/jmeter/html-report ${REMOTE_INJECTOR_CONFIG} ${OUTPUT_FORMAT} ${GENERATE_REPORT_OPTION}
 
-echo -e "\n+++ Stopping ssh tunnels with injector nodes (JMeter Slave node): ${PERFORMANCE_INJECTOR_HOST}"
-ssh -S injector-tunnel -O exit ubuntu@$PERFORMANCE_INJECTOR_HOST
+slavesCount=0
+for PERFORMANCE_INJECTOR_HOST in "${injectors[@]}"
+do
+	echo -e "\n+++ Stopping ssh tunnels with injector nodes (JMeter Slave node): ${PERFORMANCE_INJECTOR_HOST}"
+	ssh -S injector-tunnel-$slavesCount -O exit ubuntu@$PERFORMANCE_INJECTOR_HOST
 
-END_TIME=$(date -u --date='3 minutes' | awk '{print $4}' |  awk '$0=substr($0,1,6)"00"')
-END_TIME_INJECTOR=$(date -u | awk '{print $4}' |  awk '$0=substr($0,1,6)"00"')
-echo "End time to recollect host resources metrics: ${END_TIME}"
+	END_TIME=$(date -u --date='3 minutes' | awk '{print $4}' |  awk '$0=substr($0,1,6)"00"')
+	END_TIME_INJECTOR=$(date -u | awk '{print $4}' |  awk '$0=substr($0,1,6)"00"')
+	echo "End time to recollect host resources metrics: ${END_TIME}"
 
-ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} "
-    mkdir -p /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}/machine_measures" &&
-    scp -r config/properties.ini ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST}:/tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}
+	ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} "
+	    mkdir -p /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}/machine_measures" &&
+	    scp -r config/properties.ini ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST}:/tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}
 
-ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} <<ENDSSH
-cd /opt/qacdo/performance/machine_measures_retrieval/
-sudo python MachineMeasuresRetrieval.py -i False -s ${START_TIME} -e ${END_TIME_INJECTOR} -path /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}
-ENDSSH
+	ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} <<ENDSSH
+	cd /opt/qacdo/performance/machine_measures_retrieval/
+	sudo python MachineMeasuresRetrieval.py -i False -s ${START_TIME} -e ${END_TIME_INJECTOR} -path /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}
+	ENDSSH
 
-echo -e "\n+++ Stopping sysstat daemons for the injector"
-ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} <<ENDSSH
-sudo sed -i 's/ENABLED="true"/ENABLED="false"/g' /etc/default/sysstat
-sudo service sysstat restart
-ENDSSH
+	echo -e "\n+++ Stopping sysstat daemons for the injector"
+	ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} <<ENDSSH
+	sudo sed -i 's/ENABLED="true"/ENABLED="false"/g' /etc/default/sysstat
+	sudo service sysstat restart
+	ENDSSH
 
-echo -e "\n+++ Stopped sysstat daemons for the injector"
+	echo -e "\n+++ Stopped sysstat daemons for the injector"
 
-if [ "${PERFORMANCE_OBTAIN_HOST_MEASURES}" = "Yes" ]; then
-echo -e "\n+++ Wait 3 minutes for the sysstat to collect final metrics"
-sleep 3m
+	if [ "${PERFORMANCE_OBTAIN_HOST_MEASURES}" = "Yes" ]; then
+		echo -e "\n+++ Wait 3 minutes for the sysstat to collect final metrics"
+		sleep 3m
 
-ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} <<ENDSSH
-cd /opt/qacdo/performance/machine_measures_retrieval/
-sudo python MachineMeasuresRetrieval.py -s ${START_TIME} -e ${END_TIME} -path /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}
-ENDSSH
-fi
+		ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} <<ENDSSH
+		cd /opt/qacdo/performance/machine_measures_retrieval/
+		sudo python MachineMeasuresRetrieval.py -s ${START_TIME} -e ${END_TIME} -path /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}
+		ENDSSH
+	fi
 
-mkdir -p ${OUTPUT_FOLDER}/hosts
-scp -r ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST}:/tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}/machine_measures/* ${OUTPUT_FOLDER}/hosts
-scp ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST}:/tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}/machine_measures.log ${OUTPUT_FOLDER}/hosts
+	mkdir -p ${OUTPUT_FOLDER}/host_$PERFORMANCE_INJECTOR_HOST
+	scp -r ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST}:/tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}/machine_measures/* ${OUTPUT_FOLDER}/host_$PERFORMANCE_INJECTOR_HOST
+	scp ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST}:/tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}/machine_measures.log ${OUTPUT_FOLDER}/host_$PERFORMANCE_INJECTOR_HOST
 
-ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} "sudo rm -r /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}"
+	ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} "sudo rm -r /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}"
+	slavesCount=$(($slavesCount+1))
+done
