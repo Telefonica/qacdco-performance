@@ -32,7 +32,7 @@ cd ${PERFORMANCE_PROJECT_PATH:-./}
 
 for PERFORMANCE_INJECTOR_HOST in "${injectors[@]}"
 do	
-	HOSTS="$HOSTS 127.0.0.1:$(($FIRSTPORT+$slavesCount))"
+	HOSTS="$HOSTS,127.0.0.1:$(($FIRSTPORT+$slavesCount))"
 	echo -e "\n+++ Sending resource files if needed to JMeter Slave node ${PERFORMANCE_INJECTOR_HOST}"
 	files=(jmeter/resources/*)
 
@@ -45,6 +45,7 @@ do
 	ssh -S injector-tunnel-$slavesCount -O check ubuntu@$PERFORMANCE_INJECTOR_HOST
 	slavesCount=$(($slavesCount+1))
 done
+HOSTS="${HOSTS:1}"
 SCRIPT_NAME=${PERFORMANCE_JMETER_SCRIPT_NAME:-test_script}
 REMOTE_INJECTOR_CONFIG="-R $HOSTS -Jserver.rmi.ssl.disable=true -Djava.rmi.server.hostname=127.0.0.1 -Jremote_hosts=$HOSTS -Jclient.rmi.localport=25000 -Jmode=Batch"
 OUTPUT_FORMAT="-Jjmeter.save.saveservice.output_format=${PERFORMANCE_OUTPUT_FORMAT:-csv}"
@@ -109,6 +110,6 @@ do
 	scp -r ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST}:/tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}/machine_measures/* ${OUTPUT_FOLDER}/host_$PERFORMANCE_INJECTOR_HOST
 	scp ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST}:/tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}/machine_measures.log ${OUTPUT_FOLDER}/host_$PERFORMANCE_INJECTOR_HOST
 
-	ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} "sudo rm -r /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}"
+	ssh ${PERFORMANCE_INJECTOR_USER}@${PERFORMANCE_INJECTOR_HOST} "sudo rm -r /tmp/qacdo/performance/machine_measures_retrieval/${FOLDER_ID}" <<ENDSSH
 	slavesCount=$(($slavesCount+1))
 done
