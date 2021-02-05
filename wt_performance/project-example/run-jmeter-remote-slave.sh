@@ -39,7 +39,7 @@ do
 	if [ ${#files[@]} -gt 0 ]; then scp ${files[@]} ubuntu@$PERFORMANCE_INJECTOR_HOST:/opt/qacdo/performance/shared_folder; fi
 
 	echo -e "\n+++ Starting ssh tunnels with injector nodes (JMeter Slave node): ${PERFORMANCE_INJECTOR_HOST}"
-	ssh -L $(($FIRSTPORT+$slavesCount)):127.0.0.1:$FIRSTPORT -L $(($SECONDPORT+$slavesCount)):127.0.0.1:$SECONDPORT -R $RMIPORT:127.0.0.1:$RMIPORT ubuntu@$PERFORMANCE_INJECTOR_HOST -fN -M -S injector-tunnel-$slavesCount
+	ssh -4 -L $(($FIRSTPORT+$slavesCount)):127.0.0.1:$FIRSTPORT -L $(($SECONDPORT+$slavesCount)):127.0.0.1:$SECONDPORT -R $RMIPORT:127.0.0.1:$RMIPORT ubuntu@$PERFORMANCE_INJECTOR_HOST -fN -M -S injector-tunnel-$slavesCount
 
 	echo -e "\n+++ Checking tunnel status with JMeter Slave node ${PERFORMANCE_INJECTOR_HOST}"
 	ssh -S injector-tunnel-$slavesCount -O check ubuntu@$PERFORMANCE_INJECTOR_HOST
