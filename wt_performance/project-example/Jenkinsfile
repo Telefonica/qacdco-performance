@@ -9,6 +9,7 @@ https://github.com/jenkinsci/performance-plugin/blob/master/src/main/java/hudson
 */
 env.JOB_NAME = "${env.JOB_NAME.replaceFirst('.+?/', '').replace('%2F', '/')}"
 url_repo = 'git@github.com:Telefonica/qacdco-performance.git'
+url_repo_project = 'git@github.com:Telefonica/PROJECT_REPOSITORY.git'
 class_repo = 'GithubWeb'
 /* Set your docker image, you can set several different images*/
 def jenkinsInstance = [
@@ -20,40 +21,77 @@ def projectProperties = [
         buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '30')),
         disableConcurrentBuilds(),
         parameters([
-            string(defaultValue: "master", description: 'Branch to build', name: 'GIT_BRANCH'),
-            choice(choices: ["GUMA qacdo", "IP connection"].join("\n"), description: 'Mode used to connect to the inyector. If using GUMA, introduce the name of the machine, if using IP connection introduce the IP of the machine.', name: 'PERFORMANCE_CONNECTION_MODE'),
-            string(defaultValue: "qacdo-es-pro-performance-inj01", description: 'Injector node to run performance tests', name: 'PERFORMANCE_INJECTOR_HOST'),
-            string(defaultValue: "test_script", description: 'Project to be executed', name: 'PERFORMANCE_JMETER_SCRIPT_NAME'),
+            string(defaultValue: "master", description: 'Performance Framework branch', name: 'GIT_BRANCH'),
+            string(defaultValue: "host_injector", description: 'Injector node to run performance tests', name: 'PERFORMANCE_INJECTOR_HOST'),
+            string(defaultValue: "performance_script", description: 'Performance Jmeter script to be executed', name: 'PERFORMANCE_JMETER_SCRIPT_NAME'),
             string(defaultValue: "ubuntu", description: 'Name of the user of the inyector', name: 'PERFORMANCE_INJECTOR_USER'),
-            choice(choices: ["No", "Yes"].join("\n"), description: 'Obtain host machine measures', name: 'PERFORMANCE_OBTAIN_HOST_MEASURES'),
-            string(defaultValue: "project-name", description: 'Project name in QA Reporter', name: 'PERFORMANCE_PROJECT_NAME'),
+            choice(defaultValue: 'No', choices: ["No", "Yes"].join("\n"), description: 'Obtain host machine measures', name: 'PERFORMANCE_OBTAIN_HOST_MEASURES'),
+            string(defaultValue: "qareporter_project_name", description: 'Project name in QA Reporter', name: 'PERFORMANCE_PROJECT_NAME'),
             string(defaultValue: "Version_number", description: 'Version Number', name: 'PERFORMANCE_VERSION_NUMBER'),
-            string(defaultValue: "Project_module", description: 'Project_Module', name: 'PERFORMANCE_PROJECT_MODULE')
+            string(defaultValue: "module", description: 'Project_Module', name: 'PERFORMANCE_PROJECT_MODULE')
         ])
 ]
 properties(projectProperties)
 node (jenkinsInstance["perfMasterInstance"]) {
     wrap([$class: 'AnsiColorBuildWrapper']) {
         try{
-            stage('Clean') {
-                cleanWs notFailBuild: true
+            stage('Injector deployment') {
+                echo "Building Performance test injectors ..."
+                build job: 'WTP_INJECTOR_DEPLOYMENT', wait: false, parameters: [string(name: 'INJECTOR_HOST', value: "${PERFORMANCE_INJECTOR_HOST}")]
             }
+/*
+            stage('Load Injector environment'){
+                echo "Building Performance test injectors ...$PERFORMANCE_INJECTOR_HOST"
+                build job: 'create_load_environment', wait: true, parameters: [string(name: 'branch', value: 'master')]
+            }
+
+            stage('Injector deployment') {
+                echo "Building Performance test injectors ..."
+                build job: 'WTP_INJECTOR_DEPLOYMENT', wait: false, parameters: [string(name: 'INJECTOR_HOST', value: "${PERFORMANCE_INJECTOR_HOST}")]
+            }
+
+            stage('Load project environment'){
+                echo "Building Performance test injectors ..."
+                build job: 'create_environment', wait: true, parameters: [string(name: 'branch', value: "${branch}")]
+            } */
             stage('Checkout') {
                 // Running job info
                 echo "job name: ${env.JOB_NAME}"
-                echo "branch name: ${GIT_BRANCH}"
+                echo "branch name: master"
                 echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+                sh 'mkdir -p ./Framework'
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: '${GIT_BRANCH}']],
+                    branches: [[name: 'master']],
                     browser: [$class: class_repo, repoUrl: url_repo],
                     doGenerateSubmoduleConfigurations: false,
-                    extensions: [],
+                    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'Framework']],
                     submoduleCfg: [],
                     userRemoteConfigs: [[
                         credentialsId: 'df82f4c6-562c-4f38-b77d-6d2fc4213688', //CONTINT user id to github
                         refspec: '+refs/heads/*:refs/remotes/origin/*',  // Where you search branch to checkout
                         url: url_repo
+                        ]]
+                    ])
+            }
+
+            stage('Checkout_repo_project') {
+                // Running job info
+                echo "job name: ${env.JOB_NAME}"
+                echo "branch name: ${GIT_BRANCH}"
+                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+                sh 'mkdir -p ./Project'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '${GIT_BRANCH}']],
+                    browser: [$class: class_repo, repoUrl: url_repo_project],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'Project']],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[
+                        credentialsId: 'df82f4c6-562c-4f38-b77d-6d2fc4213688', //CONTINT user id to github
+                        refspec: '+refs/heads/*:refs/remotes/origin/*',  // Where you search branch to checkout
+                        url: url_repo_project
                         ]]
                     ])
             }
@@ -65,7 +103,8 @@ node (jenkinsInstance["perfMasterInstance"]) {
                     env.PERFORMANCE_INJECTOR_HOST = sh (script: "curl -sk https://qacdco.d-consumer.com/agora/guma2/api/servers/${PERFORMANCE_INJECTOR_HOST}/ | grep -oP \'(?<=external_ip\".{1}\")[0-9.]*\'", returnStdout: true ).trim()
             }
                 echo "Preparing environment if needed ..."
-                env.PERFORMANCE_PROJECT_PATH='./wt_performance/project-example'
+                env.PERFORMANCE_PROJECT_PATH='./Project/performance/performance_tests'
+				env.FRAMEWORK_PATH='./Framework/wt_performance/project-example'
                 env.PERFORMANCE_OUTPUT_FORMAT='csv'
                 env.TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S', returnStdout: true ).trim()
                 env.OUTPUT_FOLDER="./output/${PERFORMANCE_JMETER_SCRIPT_NAME}_${PERFORMANCE_INJECTOR_HOST}_${TIMESTAMP}"
@@ -74,13 +113,13 @@ node (jenkinsInstance["perfMasterInstance"]) {
             }
             stage('PerformanceTesting'){
                 try{
-                    sh 'chmod +x $PERFORMANCE_PROJECT_PATH/run-jmeter-remote-slave.sh'
-                    sh 'chmod +x $PERFORMANCE_PROJECT_PATH/upload_to_qareporter.sh'
+                    sh 'chmod +x $FRAMEWORK_PATH/run-jmeter-remote-slave.sh'
+                    sh 'chmod +x $FRAMEWORK_PATH/upload_to_qareporter.sh'
                     sh 'mkdir -p $PERFORMANCE_PROJECT_PATH/output/grafana'
-                    sh 'python /opt/csv_to_influxdb/make_dashboard.py -i $PERFORMANCE_PROJECT_PATH/output/grafana/ --name $PERFORMANCE_PROJECT_NAME'
-                    sh '$PERFORMANCE_PROJECT_PATH/run-jmeter-remote-slave.sh'
+                    sh 'python /opt/csv_to_influxdb/make_dashboard.py -i $PERFORMANCE_PROJECT_PATH/output/grafana/ --name $PERFORMANCE_PROJECT_PATH'
+                    sh '$FRAMEWORK_PATH/run-jmeter-remote-slave.sh'
                     sh 'ls -la $PERFORMANCE_PROJECT_PATH/output/$PERFORMANCE_JMETER_SCRIPT_NAME*'
-                    sh '$PERFORMANCE_PROJECT_PATH/upload_to_qareporter.sh'
+                    sh '$FRAMEWORK_PATH/upload_to_qareporter.sh'
                 }
                 /* Catch error in test stage for notify failed test and run other stages */
                 catch(error){
@@ -97,15 +136,11 @@ node (jenkinsInstance["perfMasterInstance"]) {
             perfReport([
                sourceDataFiles: '**/output/*/jmeter/*.csv',
                modeEvaluation: false,
-               modeOfThreshold: true,
+               modeOfThreshold: false,
                failBuildIfNoResultFile: true,
-               errorUnstableThreshold: 10,
-               errorFailedThreshold: 20,
-               relativeUnstableThresholdNegative: -100.0,
-               relativeUnstableThresholdPositive: 300.0,
-               relativeFailedThresholdNegative: -200.0,
-               relativeFailedThresholdPositive: 400.0,
-               compareBuildPrevious: true,
+               errorUnstableThreshold: 0,
+               errorFailedThreshold: 1,
+               compareBuildPrevious: false,
                configType: 'PRT'
             ])
         }
