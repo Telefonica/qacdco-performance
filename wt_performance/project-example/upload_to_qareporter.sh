@@ -22,7 +22,7 @@ if (( ${#PROJECT_OBJECT} )); then
   PROJECT_ID=$(echo "${PROJECT_OBJECT}" | awk -v FS="(project_id\":|,)" '{print $2}')
   EXECUTION_DATE=$(date +"%Y-%m-%d %H:%M")
 
-  EXECUTION_OBJECT=$(curl -X POST -d "project-id=${PROJECT_ID}&execution-name=autoexecution_${PERFORMANCE_VERSION_NUMBER}&execution-date=${EXECUTION_DATE}" ${QA_REPORTER_URL}/api/1.0/performance/executions/)
+  EXECUTION_OBJECT=$(curl -X POST -d "project-id=${PROJECT_ID}&project-version=${PERFORMANCE_VERSION_NUMBER}&execution-name=autoexecution_${PERFORMANCE_VERSION_NUMBER}&execution-date=${EXECUTION_DATE}" ${QA_REPORTER_URL}/api/1.0/performance/executions/)
   EXECUTION_ID=$(echo "${EXECUTION_OBJECT}" | awk -v FS="(execution_id\":|})" '{print $2}')
 
 
