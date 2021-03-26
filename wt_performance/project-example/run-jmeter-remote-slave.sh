@@ -19,6 +19,7 @@
 
 echo "[CDO QA Team] Performance Tests execution"
 param=$1
+echo "Le hemos pasado el parametro: $param"
 # Used to separate executions
 FOLDER_ID=$(uuidgen | cut -c1-8)
 
