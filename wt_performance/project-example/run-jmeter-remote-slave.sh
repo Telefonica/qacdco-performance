@@ -18,7 +18,8 @@
 #                                     JMeter slave node is running with the properly configuration in that nodes.
 
 echo "[CDO QA Team] Performance Tests execution"
-param=$1
+#param=$1
+param="-JAPIKEY=26af4546-c0eb-4b66-a958-0dae8a835de0"
 echo "Le hemos pasado el parametro: $param"
 param64=`echo $param | base64`
 echo "El parametro en base 64 es: $param64"
