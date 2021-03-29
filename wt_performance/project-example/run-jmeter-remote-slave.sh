@@ -20,6 +20,8 @@
 echo "[CDO QA Team] Performance Tests execution"
 param=$1
 echo "Le hemos pasado el parametro: $param"
+param64=`echo $param | base64`
+echo "El parametro en base 64 es: $base64"
 # Used to separate executions
 FOLDER_ID=$(uuidgen | cut -c1-8)
 
@@ -58,6 +60,8 @@ echo -e "\n+++ Running JMeter without UI for test file 'jmeter/${SCRIPT_NAME}.jm
 START_TIME=$(date -u --date='3 minutes ago' | awk '{print $4}' |  awk '$0=substr($0,1,6)"00"')
 
 echo "Start time to recollect host resources metrics: ${START_TIME}"
+echo "el comando es: jmeter -n -j ${OUTPUT_FOLDER}/jmeter/jmeter.log -l ${OUTPUT_FOLDER}/jmeter/samples.${PERFORMANCE_OUTPUT_FORMAT:-csv} -t jmeter/${SCRIPT_NAME}.jmx $param -o ${OUTPUT_FOLDER}/jmeter/html-report ${REMOTE_INJECTOR_CONFIG} ${OUTPUT_FORMAT} ${GENERATE_REPORT_OPTION}"
+
 jmeter -n -j ${OUTPUT_FOLDER}/jmeter/jmeter.log -l ${OUTPUT_FOLDER}/jmeter/samples.${PERFORMANCE_OUTPUT_FORMAT:-csv} -t jmeter/${SCRIPT_NAME}.jmx $param -o ${OUTPUT_FOLDER}/jmeter/html-report ${REMOTE_INJECTOR_CONFIG} ${OUTPUT_FORMAT} ${GENERATE_REPORT_OPTION}
 
 echo -e "\n+++ Stopping ssh tunnels with injector nodes (JMeter Slave node): ${PERFORMANCE_INJECTOR_HOST}"
