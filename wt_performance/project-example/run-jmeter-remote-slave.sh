@@ -21,7 +21,7 @@ echo "[CDO QA Team] Performance Tests execution"
 param=$1
 echo "Le hemos pasado el parametro: $param"
 param64=`echo $param | base64`
-echo "El parametro en base 64 es: $base64"
+echo "El parametro en base 64 es: $param64"
 # Used to separate executions
 FOLDER_ID=$(uuidgen | cut -c1-8)
 
