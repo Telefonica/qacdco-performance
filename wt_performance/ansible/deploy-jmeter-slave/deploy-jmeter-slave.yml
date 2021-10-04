@@ -4,7 +4,7 @@
   hosts: jMeter_nodes # Host where deploy the injector
 
   vars:
-    ansible_python_interpreter: auto_legacy_silent
+    ansible_python_interpreter: /usr/bin/python3.8
 
   tasks:
 
