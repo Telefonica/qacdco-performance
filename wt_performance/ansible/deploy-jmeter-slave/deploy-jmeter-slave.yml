@@ -8,7 +8,7 @@
     - name: Install pip
       become: yes
       apt:
-        name: python-pip
+        name: python3-pip
 
     - name: Install docker-py package
       become: yes
@@ -76,39 +76,3 @@
         owner: ubuntu
         group: ubuntu
         mode: 0775
-
-    - name: Install injector scripts to retrieve machine measures
-      become: yes
-      synchronize:
-        src: ../../../machine_measures_retrieval
-        dest: /opt/qacdo/performance/
-
-
-    - name: Install script dependencies
-      become: yes
-      pip:
-        requirements: requirements.txt
-        chdir: /opt/qacdo/performance/machine_measures_retrieval
-
-    - name: Install sar
-      become: yes
-      apt:
-        name: sysstat
-
-    - name: Deactivate sar if it was still active
-      become: yes
-      replace:
-        path: /etc/default/sysstat
-        regexp: '^ENABLED="true"'
-        replace: ENABLED="false"
-
-    - name: Set cron frequency to 1 minute
-      become: yes
-      replace:
-        path: /etc/cron.d/sysstat
-        regexp: '^5-55/10 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1 '
-        replace: 5-55/1 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1
-
-    - name: Restart sar to update changes
-      become: yes
-      command: /etc/init.d/sysstat restart
