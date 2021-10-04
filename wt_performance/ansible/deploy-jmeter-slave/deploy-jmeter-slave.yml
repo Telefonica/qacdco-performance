@@ -3,6 +3,9 @@
 - name: Script for the deployment of a performance injector in a host
   hosts: jMeter_nodes # Host where deploy the injector
 
+  vars:
+    ansible_python_interpreter: auto_legacy_silent
+
   tasks:
 
     - name: Install pip
