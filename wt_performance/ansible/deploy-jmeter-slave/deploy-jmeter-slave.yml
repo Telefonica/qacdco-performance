@@ -10,6 +10,11 @@
       apt:
         name: python-pip
 
+    - name: Install pandas
+      become: yes
+      apt:
+        name: pandas
+
     - name: Install docker-py package
       become: yes
       pip:
