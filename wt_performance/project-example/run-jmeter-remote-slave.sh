@@ -59,7 +59,7 @@ START_TIME=$(date -u --date='3 minutes ago' | awk '{print $4}' |  awk '$0=substr
 echo "Start time to recollect host resources metrics: ${START_TIME}"
 jmeter -n -j ${OUTPUT_FOLDER}/jmeter/jmeter.log -l ${OUTPUT_FOLDER}/jmeter/samples.${PERFORMANCE_OUTPUT_FORMAT:-csv} -t jmeter/${SCRIPT_NAME}.jmx -o ${OUTPUT_FOLDER}/jmeter/html-report ${REMOTE_INJECTOR_CONFIG} ${OUTPUT_FORMAT} ${GENERATE_REPORT_OPTION}
 $JMETER_PATH/bin/JMeterPluginsCMD.sh --generate-csv ${OUTPUT_FOLDER}/jmeter/aggregate.csv --input-jtl ${OUTPUT_FOLDER}/jmeter/samples.csv --plugin-type AggregateReport
-$JMETER_PATH/bin/JMeterPluginsCMD.sh --generate-csv output/aggregate.csv --input-jtl ${OUTPUT_FOLDER}/jmeter/samples.csv --plugin-type AggregateReport
+$JMETER_PATH/bin/JMeterPluginsCMD.sh --generate-csv ${OUTPUT_FOLDER}/jmeter/TransactionsPerSecond.csv --input-jtl ${OUTPUT_FOLDER}/jmeter/samples.csv --plugin-type TransactionsPerSecond
 
 echo -e "\n+++ Stopping ssh tunnels with injector nodes (JMeter Slave node): ${PERFORMANCE_INJECTOR_HOST}"
 ssh -S injector-tunnel -O exit ubuntu@$PERFORMANCE_INJECTOR_HOST
