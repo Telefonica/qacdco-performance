@@ -5,10 +5,10 @@
 
   tasks:
 
-    - name: Install pip
-      become: yes
-      apt:
-        name: python-pip
+  #  - name: Install pip
+   #   become: yes
+    #  apt:
+     #   name: python-pip
 
     - name: Install docker-py package
       become: yes
