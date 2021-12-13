@@ -7,7 +7,7 @@
 if [ "$QA_REPORTER_ENVIRONMENT" == "PRO" ]; then
   QA_REPORTER_URL="https://qacdco.d-consumer.com/qareporter"
 elif [ "$QA_REPORTER_ENVIRONMENT" == "PRE" ]; then
-  QA_REPORTER_URL="https://qacdco.d-consumer.com/pre-qareporter"
+  QA_REPORTER_URL="http://qacdco.hi.inet/qaperformance-pre"
 else
   echo "Error, QA_REPORTER_URL must be PRE or PRO. Exiting..."
   exit -1
