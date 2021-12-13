@@ -5,7 +5,7 @@
 
 # NON-UI JMeter execution mode using remote node injector (JMeter slave node)
 if [ "$QA_REPORTER_ENVIRONMENT" == "PRO" ]; then
-  QA_REPORTER_URL="http://qacdco.hi.inet/qaperformance-pre"
+  QA_REPORTER_URL="https://qacdco.d-consumer.com/qareporter"
 elif [ "$QA_REPORTER_ENVIRONMENT" == "PRE" ]; then
   QA_REPORTER_URL="http://qacdco.hi.inet/qaperformance-pre"
 else
