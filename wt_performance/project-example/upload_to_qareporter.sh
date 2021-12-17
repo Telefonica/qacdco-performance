@@ -23,7 +23,7 @@ if (( ${#PROJECT_OBJECT} )); then
   EXECUTION_DATE=$(date +"%Y-%m-%d %H:%M")
 
   EXECUTION_OBJECT=$(curl -X POST -d "project-id=${PROJECT_ID}&project-version=${PERFORMANCE_VERSION_NUMBER}&execution-name=autoexecution_${PERFORMANCE_VERSION_NUMBER}&execution-date=${EXECUTION_DATE}" ${QA_REPORTER_URL}/api/1.0/performance/executions/)
-  EXECUTION_ID=$(echo "${EXECUTION_OBJECT}" | awk -v FS="(execution_id\": |})" '{print $2}') | awk -F "," '{print $1}'
+  EXECUTION_ID=$(echo "${EXECUTION_OBJECT}" | awk -v FS="(execution_id\": |})" '{print $2}' | awk -F "," '{print $1}')
 
 
   cd ${PERFORMANCE_PROJECT_PATH}/${OUTPUT_FOLDER}
