@@ -31,13 +31,13 @@ files=(jmeter/resources/*)
 if [ ${#files[@]} -gt 0 ]; then scp ${files[@]} ubuntu@$PERFORMANCE_INJECTOR_HOST:/opt/qacdo/performance/shared_folder; fi
 
 echo -e "\n+++ Starting ssh tunnels with injector nodes (JMeter Slave node): ${PERFORMANCE_INJECTOR_HOST}"
-ssh -L 24000:172.16.100.5:24000 -L 26000:172.16.100.5:26000 -R 25000:172.16.100.5:25000 ubuntu@$PERFORMANCE_INJECTOR_HOST -fN -M -S injector-tunnel
+ssh -L 24000:127.0.0.1:24000 -L 26000:127.0.0.1:26000 -R 25000:127.0.0.1:25000 ubuntu@$PERFORMANCE_INJECTOR_HOST -fN -M -S injector-tunnel
 
 echo -e "\n+++ Checking tunnel status with JMeter Slave node ${PERFORMANCE_INJECTOR_HOST}"
 ssh -S injector-tunnel -O check ubuntu@$PERFORMANCE_INJECTOR_HOST
 
 SCRIPT_NAME=${PERFORMANCE_JMETER_SCRIPT_NAME:-test_script}
-REMOTE_INJECTOR_CONFIG="-R172.16.100.5:24000 -Jserver.rmi.ssl.disable=true -Djava.rmi.server.hostname=127.0.0.1 -Jclient.rmi.localport=25000 -Jmode=Batch"
+REMOTE_INJECTOR_CONFIG="-R172.16.100.5:24000 -Jserver.rmi.ssl.disable=true -Djava.rmi.server.hostname=172.16.100.6 -Jclient.rmi.localport=25000 -Jmode=Batch"
 OUTPUT_FORMAT="-Jjmeter.save.saveservice.output_format=${PERFORMANCE_OUTPUT_FORMAT:-csv}"
 if [ "$PERFORMANCE_OUTPUT_FORMAT" = "csv" ]; then
    GENERATE_REPORT_OPTION="-e"
