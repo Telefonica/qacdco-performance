@@ -37,7 +37,7 @@ echo -e "\n+++ Checking tunnel status with JMeter Slave node ${PERFORMANCE_INJEC
 ssh -S injector-tunnel -O check ubuntu@$PERFORMANCE_INJECTOR_HOST
 
 SCRIPT_NAME=${PERFORMANCE_JMETER_SCRIPT_NAME:-test_script}
-REMOTE_INJECTOR_CONFIG="-R52.232.78.44:24000 -Jserver.rmi.ssl.disable=true -Djava.rmi.server.hostname=52.166.194.22 -Jclient.rmi.localport=25000 -Jmode=Batch"
+REMOTE_INJECTOR_CONFIG="-R172.16.100.5:24000 -Jserver.rmi.ssl.disable=true -Djava.rmi.server.hostname=52.166.194.22 -Jclient.rmi.localport=25000 -Jmode=Batch"
 OUTPUT_FORMAT="-Jjmeter.save.saveservice.output_format=${PERFORMANCE_OUTPUT_FORMAT:-csv}"
 if [ "$PERFORMANCE_OUTPUT_FORMAT" = "csv" ]; then
    GENERATE_REPORT_OPTION="-e"
