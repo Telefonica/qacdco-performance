@@ -49,6 +49,12 @@
       debug:
         msg: "{{id_rsa_pub.stdout}}"
 
+    - name: Replace Jmeter heap memory
+        replace:
+          path: /usr/local/apache-jmeter-4.0/bin/jmeter
+          regexp: '-Xms1g -Xmx1g -XX:MaxMetaspaceSize=256m'
+          replace: "-Xms4g -Xmx4g -XX:MaxMetaspaceSize=256m"
+
     - name: Running the container
       become: yes
       become_user: root
