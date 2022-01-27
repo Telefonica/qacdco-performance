@@ -9,7 +9,7 @@ FROM ubuntu:20.10
 RUN apt-get -y update && \
     apt-get -y install curl && \
 	apt-get -y install sudo && \
-	apt-get -y install wget &&
+	apt-get -y install wget
 	#apt-get -y install python2
 
 RUN apt install -y openjdk-8-jdk
