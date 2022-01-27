@@ -4,7 +4,7 @@
 # Copyright (c) Telefonica Digital - CDO QA Team
 # Inspired on  cirit/jmeter docker image: https://hub.docker.com/r/cirit/jmeter/
 
-FROM ubuntu:20.10
+FROM ubuntu:20.04.3
 
 RUN apt-get -y update && \
     apt-get -y install curl && \
