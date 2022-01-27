@@ -117,4 +117,7 @@ websocket-samplers=1.2.2 \
  && chmod +x ${JMETER_HOME}/bin/*.sh \
  && rm -fr /tmp/*
 
+ EXPOSE 24000
+EXPOSE 26000
+
  ENTRYPOINT ["jmeter-server", "-Jserver.rmi.ssl.disable=true", "-Djava.rmi.server.hostname=127.0.0.1", "-Jserver_port=24000", "-Jserver.rmi.localhostname=127.0.0.1", "-Jserv1er.rmi.localport=26000"]
