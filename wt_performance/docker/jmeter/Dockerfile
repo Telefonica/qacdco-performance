@@ -26,7 +26,6 @@ ENV JSON_LIB_FULL_VERSION=${JSON_LIB_VERSION}-jdk15
 RUN wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz && \
 	tar -xzf apache-jmeter-${JMETER_VERSION}.tgz -C /usr/local/
 
-
 RUN sed -i s/-Xms1g -Xmx1g -XX:MaxMetaspaceSize=256m/-Xms4g -Xmx4g -XX:MaxMetaspaceSize=256m/g jmeter
 
 RUN rm -rf apache-jmeter-${JMETER_VERSION}.tgz \
