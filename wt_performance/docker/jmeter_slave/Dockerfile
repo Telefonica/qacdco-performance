@@ -7,4 +7,5 @@ FROM jmeter:latest
 EXPOSE 24000
 EXPOSE 26000
 
-ENTRYPOINT ["jmeter-server", "-Jserver.rmi.ssl.disable=true", "-Djava.rmi.server.hostname=127.0.0.1", "-Jserver_port=24000", "-Jserver.rmi.localhostname=127.0.0.1", "-Jserver.rmi.localport=26000"]
+#ENTRYPOINT ["jmeter-server", "-Jserver.rmi.ssl.disable=true", "-Djava.rmi.server.hostname=127.0.0.1", "-Jserver_port=24000", "-Jserver.rmi.localhostname=127.0.0.1", "-Jserver.rmi.localport=26000"]
+ENTRYPOINT $JMETER_HOME/bin/jmeter-server -Jserver.rmi.ssl.disable=true -Dserver.rmi.localport=26000 -Dserver_port=24000
