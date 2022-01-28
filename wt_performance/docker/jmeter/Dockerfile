@@ -26,7 +26,7 @@ ENV JSON_LIB_FULL_VERSION=${JSON_LIB_VERSION}-jdk15
 RUN wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz && \
 	tar -xzf apache-jmeter-${JMETER_VERSION}.tgz -C /usr/local/
 
-#RUN sed -i "s/-Xms1g -Xmx1g -XX:MaxMetaspaceSize=256m/-Xms4g -Xmx4g -XX:MaxMetaspaceSize=256m/g" ${JMETER_HOME}/bin/jmeter
+RUN sed -i "s/-Xms1g -Xmx1g -XX:MaxMetaspaceSize=256m/-Xms4g -Xmx4g -XX:MaxMetaspaceSize=256m/g" ${JMETER_HOME}/bin/jmeter
 
 RUN rm -rf apache-jmeter-${JMETER_VERSION}.tgz \
 			${JMETER_HOME}/bin/examples \
@@ -117,7 +117,7 @@ websocket-samplers=1.2.2 \
  && chmod +x ${JMETER_HOME}/bin/*.sh \
  && rm -fr /tmp/*
 
-EXPOSE 24000
-EXPOSE 26000
+#EXPOSE 24000
+#EXPOSE 26000
 
-ENTRYPOINT ["jmeter-server", "-Jserver.rmi.ssl.disable=true", "-Djava.rmi.server.hostname=127.0.0.1", "-Jserver_port=24000", "-Jserver.rmi.localhostname=127.0.0.1", "-Jserv1er.rmi.localport=26000"]
+#ENTRYPOINT ["jmeter-server", "-Jserver.rmi.ssl.disable=true", "-Djava.rmi.server.hostname=127.0.0.1", "-Jserver_port=24000", "-Jserver.rmi.localhostname=127.0.0.1", "-Jserv1er.rmi.localport=26000"]
