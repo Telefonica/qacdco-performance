@@ -1,0 +1,21 @@
+version: '3.3'
+
+services:
+  services:
+
+    master:
+      image: jmeter
+      container_name: master
+      tty: true
+      hostname: master
+      networks:
+        - vins
+    slave:
+      image: jmserver_slave
+      tty: true
+      networks:
+        - vins
+
+  networks:
+    vins:
+      driver: bridge
