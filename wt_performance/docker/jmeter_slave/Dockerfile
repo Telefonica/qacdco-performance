@@ -1,7 +1,7 @@
 # Copyright (c) Telefonica Digital - CDO QA Team
 # Inspired on  cirit/jmeter docker image: https://hub.docker.com/r/cirit/jmeter/
 
-FROM jmeter-base:latest
+FROM jmeter:latest
 
 # Port 24000 for the JMeter connection and port 26000 for RMI from client to server
 EXPOSE 24000
