@@ -10,4 +10,4 @@ EXPOSE 24000 26000
 #EXPOSE 50000
 
 ENTRYPOINT ["jmeter-server", "-Jserver.rmi.ssl.disable=true", "-Djava.rmi.server.hostname=127.0.0.1", "-Jserver_port=24000", "-Jserver.rmi.localhostname=127.0.0.1", "-Jserver.rmi.localport=26000"]
-ENTRYPOINT jmeter-server -Jserver.rmi.ssl.disable=true -Dserver.rmi.localport=50000 -Dserver_port=1099
+#ENTRYPOINT jmeter-server -Jserver.rmi.ssl.disable=true -Dserver.rmi.localport=50000 -Dserver_port=1099
