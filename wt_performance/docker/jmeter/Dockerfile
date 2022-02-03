@@ -14,7 +14,7 @@ RUN apt-get -y update && \
 
 RUN apt install -y openjdk-8-jdk
 
-ENV JMETER_VERSION=4.0
+ENV JMETER_VERSION=5.4.3
 ENV JMETER_HOME=/usr/local/apache-jmeter-${JMETER_VERSION}
 ENV PATH=${JMETER_HOME}/bin:${PATH}
 ENV JMETER_PLUGINS_MANAGER_VERSION=1.3
