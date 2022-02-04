@@ -34,7 +34,7 @@ if (( ${#PROJECT_OBJECT} )); then
        -F "data=@jmeter/samples.csv" \
        -F "project-id=${PROJECT_ID}" \
        -F "execution-id=${EXECUTION_ID}" \
-       -F 'input-type=jmeter-csv'
+       -F 'input-type=jmeter-csv' \
        ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
 
   if [ "${PERFORMANCE_OBTAIN_HOST_MEASURES}" = "Yes" ]; then
