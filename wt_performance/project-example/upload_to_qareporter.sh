@@ -31,7 +31,6 @@ if (( ${#PROJECT_OBJECT} )); then
                           -F "version=${PERFORMANCE_VERSION_NAME}"  \
                           -F "date=${EXECUTION_DATE}"               \
                           ${QA_REPORTER_URL}/api/1.0/performance/executions/)
-                          # -d "name=${PERFORMANCE_EXECUTION_NAME}&project-id=${PROJECT_ID}&module=${PERFORMANCE_PROJECT_MODULE}&version=${PERFORMANCE_VERSION_NUMBER}&date=${EXECUTION_DATE}" \
   EXECUTION_ID=$(echo "${EXECUTION_OBJECT}" | awk -v FS="(execution_id\": |})" '{print $2}' | awk -F "," '{print $1}')
 
 
