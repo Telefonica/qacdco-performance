@@ -24,12 +24,25 @@ if (( ${#PROJECT_OBJECT} )); then
   PROJECT_ID=$(echo "${PROJECT_OBJECT}" | awk -v FS="(project_id\":|,)" '{print $2}')
   EXECUTION_DATE=$(date +"%Y-%m-%d %H:%M")
 
-  EXECUTION_OBJECT=$(curl -X POST -d "name=autoexecution_${PERFORMANCE_VERSION_NUMBER}&project-id=${PROJECT_ID}&module=${PERFORMANCE_PROJECT_MODULE}&version=${PERFORMANCE_VERSION_NUMBER}&date=${EXECUTION_DATE}" ${QA_REPORTER_URL}/api/1.0/performance/executions/)
+  EXECUTION_OBJECT=$(curl -X POST                                   \
+                          -F "project-id=${PROJECT_ID}"             \
+                          -F "module=${PERFORMANCE_MODULE_NAME}"    \
+                          -F "name=${PERFORMANCE_EXECUTION_NAME}"   \
+                          -F "version=${PERFORMANCE_VERSION_NAME}"  \
+                          -F "date=${EXECUTION_DATE}"               \
+                          ${QA_REPORTER_URL}/api/1.0/performance/executions/)
+                          # -d "name=${PERFORMANCE_EXECUTION_NAME}&project-id=${PROJECT_ID}&module=${PERFORMANCE_PROJECT_MODULE}&version=${PERFORMANCE_VERSION_NUMBER}&date=${EXECUTION_DATE}" \
   EXECUTION_ID=$(echo "${EXECUTION_OBJECT}" | awk -v FS="(execution_id\": |})" '{print $2}' | awk -F "," '{print $1}')
 
 
   cd ${PERFORMANCE_PROJECT_PATH}/${OUTPUT_FOLDER}
-  curl -X POST -F "module=${PERFORMANCE_PROJECT_MODULE}" -F "data=@jmeter/samples.csv" -F "project-id=${PROJECT_ID}" -F "execution-id=${EXECUTION_ID}" -F 'input-type=jmeter-csv' ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
+  curl -X POST                                \
+       -F "module=${PERFORMANCE_MODULE_NAME}" \
+       -F "data=@jmeter/samples.csv"          \
+       -F "project-id=${PROJECT_ID}"          \
+       -F "execution-id=${EXECUTION_ID}"      \
+       -F 'input-type=jmeter-csv'             \
+       ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
 
   if [ "${PERFORMANCE_OBTAIN_HOST_MEASURES}" = "Yes" ]; then
 
