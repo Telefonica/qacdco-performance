@@ -48,22 +48,46 @@ if (( ${#PROJECT_OBJECT} )); then
 
       for file_cpu in "hosts/tmp_collectd_cpu_"*
       do
-        curl -X POST -F "module=${PERFORMANCE_PROJECT_MODULE}" -F "data=@$file_cpu" -F "project-id=${PROJECT_ID}" -F "execution-id=${EXECUTION_ID}" -F 'input-type=cpu-csv' ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
+        curl -X POST                                    \
+             -F "module=${PERFORMANCE_PROJECT_MODULE}"  \
+             -F "data=@$file_cpu"                       \
+             -F "project-id=${PROJECT_ID}"              \
+             -F "execution-id=${EXECUTION_ID}"          \
+             -F 'input-type=cpu-csv'                    \
+             ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
       done
 
       for file_disk in "hosts/tmp_collectd_disk_"*
       do
-        curl -X POST -F "module=${PERFORMANCE_PROJECT_MODULE}" -F "data=@$file_disk" -F "project-id=${PROJECT_ID}" -F "execution-id=${EXECUTION_ID}" -F 'input-type=disk-csv' ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
+        curl -X POST                                    \
+             -F "module=${PERFORMANCE_PROJECT_MODULE}"  \
+             -F "data=@$file_disk"                      \
+             -F "project-id=${PROJECT_ID}"              \
+             -F "execution-id=${EXECUTION_ID}"          \
+             -F 'input-type=disk-csv'                   \
+             ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
       done
 
       for file_mem in "hosts/tmp_collectd_memory_"*
       do
-        curl -X POST -F "module=${PERFORMANCE_PROJECT_MODULE}" -F "data=@$file_mem" -F "project-id=${PROJECT_ID}" -F "execution-id=${EXECUTION_ID}" -F 'input-type=memory-csv' ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
+        curl -X POST                                    \
+             -F "module=${PERFORMANCE_PROJECT_MODULE}"  \
+             -F "data=@$file_mem"                       \
+             -F "project-id=${PROJECT_ID}"              \
+             -F "execution-id=${EXECUTION_ID}"          \
+             -F 'input-type=memory-csv'                 \
+             ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
       done
 
       for file_net in "hosts/tmp_collectd_network_"*
       do
-        curl -X POST -F "module=${PERFORMANCE_PROJECT_MODULE}" -F "data=@$file_net" -F "project-id=${PROJECT_ID}" -F "execution-id=${EXECUTION_ID}" -F 'input-type=network-csv' ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
+        curl -X POST                                    \
+             -F "module=${PERFORMANCE_PROJECT_MODULE}"  \
+             -F "data=@$file_net"                       \
+             -F "project-id=${PROJECT_ID}"              \
+             -F "execution-id=${EXECUTION_ID}"          \
+             -F 'input-type=network-csv'                \
+             ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
       done
 
   else
