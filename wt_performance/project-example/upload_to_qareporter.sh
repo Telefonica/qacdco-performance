@@ -28,6 +28,7 @@ if (( ${#PROJECT_OBJECT} )); then
                           -F "project-id=${PROJECT_ID}"             \
                           -F "module=${PERFORMANCE_MODULE_NAME}"    \
                           -F "name=${PERFORMANCE_EXECUTION_NAME}"   \
+                          -F "type=${PERFORMANCE_EXECUTION_TYPE}"   \
                           -F "version=${PERFORMANCE_VERSION_NAME}"  \
                           -F "date=${EXECUTION_DATE}"               \
                           ${QA_REPORTER_URL}/api/1.0/performance/executions/)
@@ -35,12 +36,12 @@ if (( ${#PROJECT_OBJECT} )); then
 
 
   cd ${PERFORMANCE_PROJECT_PATH}/${OUTPUT_FOLDER}
-  curl -X POST                                \
-       -F "module=${PERFORMANCE_MODULE_NAME}" \
-       -F "data=@jmeter/samples.csv"          \
-       -F "project-id=${PROJECT_ID}"          \
-       -F "execution-id=${EXECUTION_ID}"      \
-       -F 'input-type=jmeter-csv'             \
+  curl -X POST                                 \
+       -F "module=${PERFORMANCE_MODULE_NAME}"  \
+       -F "data=@jmeter/samples.csv"           \
+       -F "project-id=${PROJECT_ID}"           \
+       -F "execution-id=${EXECUTION_ID}"       \
+       -F 'input-type=jmeter-csv'              \
        ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
 
   if [ "${PERFORMANCE_OBTAIN_HOST_MEASURES}" = "Yes" ]; then
