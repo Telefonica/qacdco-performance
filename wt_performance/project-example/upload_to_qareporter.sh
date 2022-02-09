@@ -4,15 +4,10 @@
 # CDO QA Team <qacdo@telefonica.com>
 
 
-# NON-UI JMeter execution mode using remote node injector (JMeter slave node)
-if [ "$QA_REPORTER_ENVIRONMENT" == "PRO" ]; then
-  QA_REPORTER_URL="https://qacdco.d-consumer.com/qareporter"
-elif [ "$QA_REPORTER_ENVIRONMENT" == "PRE" ]; then
-  QA_REPORTER_URL="http://qacdco.hi.inet/qaperformance-pre"
-else
-  echo "Error, QA_REPORTER_URL must be PRE or PRO. Exiting..."
-  exit -1
-fi
+case ${PERFORMANCE_REPORTER} in
+  PRE) QA_REPORTER_URL="http://qacdco.hi.inet/qaperformance-pre" ;;
+  PROD) QA_REPORTER_URL="http://qacdco.hi.inet/qaperformance" ;;
+esac
 
 echo -e "\n\n+++ Upload data to QA Reporter"
 
