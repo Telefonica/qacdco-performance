@@ -3,15 +3,14 @@
 # Copyright Telefonica Digital
 # CDO QA Team <qacdo@telefonica.com>
 
+echo -e "\n\n+++ Upload data to QA Reporter"
 
 case ${PERFORMANCE_REPORTER} in
-  PRE) QA_REPORTER_URL="http://qacdco.hi.inet/qaperformance-pre" ;;
+  PRE) QA_REPORTER_URL="http://qacdco.hi.inet/pre-qaperformance" ;;
   PROD) QA_REPORTER_URL="http://qacdco.hi.inet/qaperformance" ;;
 esac
 
-echo -e "\n\n+++ Upload data to QA Reporter"
-
-PROJECT_OBJECT=$(curl -X GET "${QA_REPORTER_URL}/api/1.0/performance/projects/?name=${PERFORMANCE_PROJECT_NAME}")
+PROJECT_OBJECT=$(curl -X GET "${QA_REPORTER_URL}/api/1.0/projects/?name=${PERFORMANCE_PROJECT_NAME}")
 PROJECT_OBJECT=${PROJECT_OBJECT##[}
 PROJECT_OBJECT=${PROJECT_OBJECT%]}
 
@@ -26,7 +25,7 @@ if (( ${#PROJECT_OBJECT} )); then
                           -F "type=${PERFORMANCE_EXECUTION_TYPE}"   \
                           -F "version=${PERFORMANCE_VERSION_NAME}"  \
                           -F "date=${EXECUTION_DATE}"               \
-                          ${QA_REPORTER_URL}/api/1.0/performance/executions/)
+                          ${QA_REPORTER_URL}/api/1.0/executions/)
   EXECUTION_ID=$(echo "${EXECUTION_OBJECT}" | awk -v FS="(execution_id\": |})" '{print $2}' | awk -F "," '{print $1}')
 
 
@@ -35,7 +34,7 @@ if (( ${#PROJECT_OBJECT} )); then
        -F "data=@jmeter/samples.csv"           \
        -F "execution-id=${EXECUTION_ID}"       \
        -F 'input-type=jmeter-csv'              \
-       ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
+       ${QA_REPORTER_URL}/api/1.0/csv_loader
 
   if [ "${PERFORMANCE_OBTAIN_HOST_MEASURES}" = "Yes" ]; then
 
@@ -47,7 +46,7 @@ if (( ${#PROJECT_OBJECT} )); then
              -F "project-id=${PROJECT_ID}"              \
              -F "execution-id=${EXECUTION_ID}"          \
              -F 'input-type=cpu-csv'                    \
-             ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
+             ${QA_REPORTER_URL}/api/1.0/csv_loader
       done
 
       for file_disk in "hosts/tmp_collectd_disk_"*
@@ -58,7 +57,7 @@ if (( ${#PROJECT_OBJECT} )); then
              -F "project-id=${PROJECT_ID}"              \
              -F "execution-id=${EXECUTION_ID}"          \
              -F 'input-type=disk-csv'                   \
-             ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
+             ${QA_REPORTER_URL}/api/1.0/csv_loader
       done
 
       for file_mem in "hosts/tmp_collectd_memory_"*
@@ -69,7 +68,7 @@ if (( ${#PROJECT_OBJECT} )); then
              -F "project-id=${PROJECT_ID}"              \
              -F "execution-id=${EXECUTION_ID}"          \
              -F 'input-type=memory-csv'                 \
-             ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
+             ${QA_REPORTER_URL}/api/1.0/csv_loader
       done
 
       for file_net in "hosts/tmp_collectd_network_"*
@@ -80,7 +79,7 @@ if (( ${#PROJECT_OBJECT} )); then
              -F "project-id=${PROJECT_ID}"              \
              -F "execution-id=${EXECUTION_ID}"          \
              -F 'input-type=network-csv'                \
-             ${QA_REPORTER_URL}/api/1.0/performance/csv_loader
+             ${QA_REPORTER_URL}/api/1.0/csv_loader
       done
 
   else
