@@ -6,8 +6,8 @@
 echo -e "\n\n+++ Upload data to QA Reporter"
 
 case ${PERFORMANCE_REPORTER} in
-  PRE) QA_REPORTER_URL="http://qacdco.hi.inet/pre-qaperformance" ;;
-  PROD) QA_REPORTER_URL="http://qacdco.hi.inet/qaperformance" ;;
+  PRE) QA_REPORTER_URL="http://qacdco.hi.inet/pre-performance/reporter" ;;
+  PROD) QA_REPORTER_URL="http://qacdco.hi.inet/performance/reporter" ;;
 esac
 
 PROJECT_OBJECT=$(curl -X GET "${QA_REPORTER_URL}/api/1.0/projects/?name=${PERFORMANCE_PROJECT_NAME}")
