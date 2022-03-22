@@ -57,7 +57,7 @@
         image: qatelefonicacdo/jmeter_slave
         state: started
         network_mode: host
-        restart: yes
+        #restart: yes
         restart_policy: unless-stopped
         volumes:
           /opt/qacdo/performance/shared_folder:/resources
