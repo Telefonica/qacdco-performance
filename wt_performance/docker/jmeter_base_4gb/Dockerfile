@@ -3,16 +3,16 @@
 
 # Copyright (c) Telefonica Digital - CDO QA Team
 # Inspired on  cirit/jmeter docker image: https://hub.docker.com/r/cirit/jmeter/
+FROM dockerhub.hi.inet/dcip/qa-cdo:latest
+#FROM ubuntu:21.10
 
-FROM ubuntu:21.10
+#RUN apt-get -y update && \
+#    apt-get -y install curl && \
+#	apt-get -y install sudo && \
+#	apt-get -y install wget && \
+#	apt-get -y install python2
 
-RUN apt-get -y update && \
-    apt-get -y install curl && \
-	apt-get -y install sudo && \
-	apt-get -y install wget && \
-	apt-get -y install python2
-
-RUN apt install -y openjdk-8-jdk
+#RUN apt install -y openjdk-8-jdk
 
 ENV JMETER_VERSION=4.0
 ENV JMETER_HOME=/usr/local/apache-jmeter-${JMETER_VERSION}
