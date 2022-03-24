@@ -26,6 +26,8 @@ ENV JSON_LIB_FULL_VERSION=${JSON_LIB_VERSION}-jdk15
 RUN wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz && \
 	tar -xzf apache-jmeter-${JMETER_VERSION}.tgz -C /usr/local/
 
+RUN chown -R contint:contint /usr/local/apache-jmeter-${JMETER_VERSION}
+
 RUN rm -f ${JMETER_HOME}/lib/mongo-java*
 
 RUN cd ${JMETER_HOME}/lib && \
@@ -40,9 +42,6 @@ RUN rm -rf apache-jmeter-${JMETER_VERSION}.tgz \
 			${JMETER_HOME}/bin/*.bat \
 			${JMETER_HOME}/docs \
 			${JMETER_HOME}/printable_docs && \
-	apt-get -y remove wget && \
-	apt-get -y --purge autoremove && \
-	apt-get -y clean && \
 	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN cd /tmp/ \
