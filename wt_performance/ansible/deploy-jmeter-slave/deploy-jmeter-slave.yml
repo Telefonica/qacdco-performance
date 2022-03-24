@@ -54,7 +54,7 @@
       become_user: root
       docker_container:
         name: injector
-        image: qatelefonicacdo/jmeter_slave
+        image: qatelefonicacdo/jmeter_slave_4gb
         state: started
         network_mode: host
         restart: yes
