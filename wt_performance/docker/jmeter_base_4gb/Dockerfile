@@ -122,3 +122,5 @@ websocket-samplers=1.2.2 \
  && chmod +x ${JMETER_HOME}/bin/*.sh \
  && rm -fr /tmp/*
 
+# Switch to root user (required by dcip)
+USER root
