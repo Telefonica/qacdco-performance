@@ -54,7 +54,7 @@
       become_user: root
       docker_container:
         name: injector
-        image: performancecdo/jmeter_slave_4g
+        image: performancecdo/jmeter-slave
         state: started
         network_mode: host
         restart: yes
