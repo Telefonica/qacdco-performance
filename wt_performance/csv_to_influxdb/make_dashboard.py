@@ -30,7 +30,7 @@ if __name__ == '__main__':
     headers = {
         'Authorization': GRAFANA_AUTH_BEARER
     }
-    resp = requests.get(url, headers=headers)
+    resp = requests.get(url, headers=headers, verify=False)
 
     if resp.status_code != 200: # The datasource is not created in Grafana platform, We create a new datasource
         payload = {
