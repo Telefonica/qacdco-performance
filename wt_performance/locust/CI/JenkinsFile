@@ -1,0 +1,185 @@
+#!groovy
+/* Copyright Telefonica Digital
+CDO QA Team <qacdo@telefonica.com>
+Support: WT-Jenkins */
+/*
+https://jenkins.io/doc/pipeline/steps/performance/
+https://www.blazemeter.com/blog/how-to-use-the-jenkins-performance-plugin
+https://github.com/jenkinsci/performance-plugin/blob/master/src/main/java/hudson/plugins/performance/PerformancePublisher.java
+*/
+env.JOB_NAME = "${env.JOB_NAME.replaceFirst('.+?/', '').replace('%2F', '/')}"
+url_repo = 'git@github.com:Telefonica/{Project_XXX}.git'
+class_repo = 'GithubWeb'
+env.QA_REPORTER_URL = 'http://qacdco.hi.inet/pre-performance/reporter'
+env.vmUser = 'ubuntu'
+env.PERFORMANCE_PROJECT_NAME = 'XXX'
+list = HOST_INJECTORS.substring(1,HOST_INJECTORS.length()-1)
+ips = list.split(',').collect{it as String}
+master = ips[0].replaceAll('\\"','')
+
+/* Set your docker image, you can set several different images*/
+def jenkinsInstance = [
+    perfMasterInstance:"qa-cdo-perf"
+]
+/* Define project properties */
+def executeJob = true
+def projectProperties = [
+        buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '30')),
+        disableConcurrentBuilds(),
+        parameters([
+            string(defaultValue: "[\"54.74.102.163\",\"63.33.190.78\"]", description: 'HOST_INJECTORS', name: 'HOST_INJECTORS'),
+            string(defaultValue: "60", description: 'Test duration in seconds', name: 'DURATION'),
+            string(defaultValue: '2', description: 'USER_COUNT', name: 'USER_COUNT'),
+            string(defaultValue: '10', description: 'SPAWN_RATE', name: 'SPAWN_RATE'),
+            string(defaultValue: "master", description: 'Performance Project branch', name: 'GIT_BRANCH'),
+            string(defaultValue: 'Modulo1', description: 'Performance Modulo', name: 'SCENARIO'),
+            string(defaultValue: '2.3', description: 'RELEASE_VERSION', name: 'RELEASE_VERSION'),
+            string(defaultValue: 'ex1', description: 'Performance execution name', name: 'PERFORMANCE_EXECUTION_NAME')
+        ])
+]
+properties(projectProperties)
+node (jenkinsInstance["perfMasterInstance"]) {
+    wrap([$class: 'AnsiColorBuildWrapper']) {
+        try{
+            stage('Clean') {
+                cleanWs notFailBuild: true
+            }
+            stage('Checkout') {
+                // Running job info
+                echo "job name: ${env.JOB_NAME}"
+                echo "branch name: ${GIT_BRANCH}"
+                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '${GIT_BRANCH}']],
+                    browser: [$class: class_repo, repoUrl: url_repo],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[
+                        credentialsId: 'df82f4c6-562c-4f38-b77d-6d2fc4213688', //CONTINT user id to github
+                        refspec: '+refs/heads/*:refs/remotes/origin/*',  // Where you search branch to checkout
+                        url: url_repo
+                        ]]
+                    ])
+            }
+
+            stage('Deploy locust cluster'){
+                /*withCredentials([string(credentialsId: 'performance_env_iothub', variable: 'performance_env_iothub')]) {
+                    sh returnStdout: true , script: 'echo ${performance_env_iothub}| tr " " "\n"> $WORKSPACE/performance/.env'
+                }*/
+                deploy_locust_stage("Build master", ips[0], "master").call()
+                def branchedStages = [:]
+                for (int i = 1; i < ips.size(); i++) {
+                   branchedStages.put("Build worker ${i}", deploy_locust_stage("Build worker ${i}", ips[i], "worker"))
+                }
+                parallel branchedStages
+                sh returnStdout: true , script: 'sleep 20'
+            }
+
+            stage('Run performance test'){
+                try{
+                    sh returnStdout: true , script: 'ssh -o StrictHostKeyChecking=no -l ${vmUser} '+ master +' "curl -s --data \\"user_count=\"${USER_COUNT}\"&spawn_rate=\"${SPAWN_RATE}\"&host=holacaracola\\" http://localhost:8089/swarm"'
+                    sh returnStdout: true , script: 'echo ${DURATION}; sleep ${DURATION}'
+                    sh returnStdout: true , script: 'ssh -o StrictHostKeyChecking=no -l ${vmUser} '+ master +' "curl -s http://localhost:8089/stop"'
+                    sh returnStdout: true , script: 'sleep 2'
+                }
+                /* Catch error in test stage for notify failed test and run other stages */
+                catch(error){
+                       currentBuild.result = 'FAILURE'
+                }
+            }
+
+            stage('Collecting all data'){
+                try{
+                    sh returnStdout: true , script: 'ssh -o StrictHostKeyChecking=no -l ${vmUser} '+ master +' "curl -s http://localhost:8089/qareporter_csv" > locust_results.csv'
+
+                    echo "Time response distribution"
+                    sh returnStdout: true , script: 'ssh -o StrictHostKeyChecking=no -l ${vmUser} '+ master +' "curl -s http://localhost:8089/stats/distribution/csv| sed -e \\"s/,0.00/,/g\\" -e \\"s/,0/,/g\\"" > distribution.csv'
+
+                    echo "Total request"
+                    sh returnStdout: true , script: 'ssh -o StrictHostKeyChecking=no -l ${vmUser} '+ master +' "curl -s http://localhost:8089/stats/requests/csv | sed -e \\"s/,0.00/,/g\\" -e \\"s/,0/,/g\\"" > requests.csv'
+
+                    echo "Exceptions"
+                    sh returnStdout: true , script: 'ssh -o StrictHostKeyChecking=no -l ${vmUser} '+ master +' "curl -s http://localhost:8089/exceptions/csv" > exceptions.csv'
+
+                    echo "+++ Query data to QA Reporter"
+                    sh returnStdout: true , script: '''
+                        PROJECT_OBJECT=$(curl -x "" -X GET "http://qacdco.hi.inet/pre-performance/reporter/api/1.0/projects/?name=${PERFORMANCE_PROJECT_NAME}")
+                        echo "$PROJECT_OBJECT"
+                        PROJECT_OBJECT=${PROJECT_OBJECT##[}
+                        PROJECT_OBJECT=${PROJECT_OBJECT%]}
+                        echo "${#PROJECT_OBJECT}"
+                          PROJECT_ID=$(echo "${PROJECT_OBJECT}" | awk -v FS="(project_id\\":|,)" '{print $2}')
+                          EXECUTION_DATE=$(date +"%Y-%m-%d %H:%M")
+                          EXECUTION_OBJECT=$(curl -X POST -F "project-id=${PROJECT_ID}" -F "module=${SCENARIO}" -F "name=${PERFORMANCE_EXECUTION_NAME}" -F "type=LOAD" -F "version=${RELEASE_VERSION}" -F "date=${EXECUTION_DATE}" http://qacdco.hi.inet/pre-performance/reporter/api/1.0/executions/)
+                          EXECUTION_ID=$(echo "${EXECUTION_OBJECT}" | awk -v FS="(execution_id\\": |})" '{print $2}' | awk -F "," '{print $1}')
+                          curl -X POST -F "data=@locust_results.csv" -F "execution-id=${EXECUTION_ID}" -F 'input-type=jmeter-csv' ${QA_REPORTER_URL}/api/1.0/csv_loader
+                    '''
+                }
+                /* Catch error in test stage for notify failed test and run other stages */
+                catch(error){
+                       currentBuild.result = 'FAILURE'
+                }
+            }
+            
+            stage('Initiate Stress test'){
+                script{
+                  if(Run_performance_test.toBoolean()) {
+                    build job: 'XXX_GLOBAL_STRESS', wait: false, parameters:
+                    [
+                        string(name: 'HOST_INJECTORS',value: HOST_INJECTORS)
+                    ]
+                  }
+                }
+            }
+        }
+        catch (error){
+            echo "Pipeline failed!"
+        }
+        finally {
+            // 1st Only achieve the Locust test results to obtain the small report
+            archiveArtifacts '**/*.*'
+            perfReport([
+               sourceDataFiles: '**/locust_results.csv',
+               filterRegex: '^(?!.*(connect|create)).*$',
+               modeEvaluation: false,
+               modeOfThreshold: true,
+               compareBuildPrevious: false,
+               configType: 'PRT',
+               percentiles: '50,90,95,99,99.9,100',
+               failBuildIfNoResultFile: true,
+               nthBuildNumber: 896,  //Baseline
+               errorUnstableThreshold: 1, //Only integers
+               errorFailedThreshold: 2, //Only integers
+               relativeUnstableThresholdNegative: -1, //Not used for modeOfThreshold to false
+               relativeUnstableThresholdPositive: 25.0, //Not used for modeOfThreshold to false
+               relativeFailedThresholdNegative: -1, //Not used for modeOfThreshold to false
+               relativeFailedThresholdPositive: 30.0 //Not used for modeOfThreshold to false
+            ])
+        }
+    }
+}
+
+def deploy_locust_stage(name, ip, nodeType) {
+     return {
+        stage("${name}") {
+            try{
+                echo "injector:${ip}"
+                def injector = ip.replaceAll(' ','')
+                sh returnStdout: true , script: "ssh-keygen -f '/home/contint/.ssh/known_hosts' -R ${injector};ssh -o StrictHostKeyChecking=no -l ${vmUser} ${injector} pwd"
+                //###Copy repo
+                sh returnStdout: true , script: "rsync -v --timeout=30 -azPr  $WORKSPACE/* ${vmUser}@${injector}:/home/${vmUser}/"
+                if (nodeType == "master" ) {//Deploying master only on first injector
+                    sh returnStdout: true , script: "ssh -o StrictHostKeyChecking=no -l ${vmUser} ${injector} \"cd tests/performance/ ;  sudo docker-compose up -d --scale master=1 --scale worker=0\""
+                } else {
+                    sh returnStdout: true , script: "ssh -o StrictHostKeyChecking=no -l ${vmUser} ${injector} \"cd tests/performance/ ;  MASTER_HOSTNAME=injector0 sudo docker-compose up -d --scale master=0 --scale worker=2\""
+                }
+            }
+            /* Catch error in test stage for notify failed test and run other stages */
+            catch(error){
+                currentBuild.result = 'FAILURE'
+            }
+        }
+    }
+}
