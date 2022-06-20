@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  master:
+    image: locustio/locust
+    ports:
+     - "8083:8089"
+    volumes:
+      - ./scenarios:/mnt/locust
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-ERROR}
+    command: -f /mnt/locust/global.py --master -H xxx.com
+  
+  worker:
+    image: locustio/locust
+    volumes:
+      - ./scenarios:/mnt/locust
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-ERROR}
+    command: -f /mnt/locust/global.py --worker --master-host master
