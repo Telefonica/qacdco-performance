@@ -22,13 +22,13 @@
         name: "docker.io"
         state: latest
 
-    - name: Add dcip contint key to authorized keys
-      authorized_key:
-        user: ubuntu
-        state: present
-        key: '{{ item }}'
-      with_file:
-        - ssh_keys/dcip_contint.pub
+ #   - name: Add dcip contint key to authorized keys
+ #     authorized_key:
+ #       user: ubuntu
+ #       state: present
+ #       key: '{{ item }}'
+ #     with_file:
+ #       - ssh_keys/dcip_contint.pub
 
     # Change location to the end
     - name: Check that the ssh keys doesn't exist
