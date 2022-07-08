@@ -29,7 +29,7 @@
         <AuthManager guiclass="AuthPanel" testclass="AuthManager" testname="HTTP Authorization Manager" enabled="true">
           <collectionProp name="AuthManager.auth_list">
             <elementProp name="" elementType="Authorization">
-              <stringProp name="Authorization.url">http://34.251.45.34:5000</stringProp>
+              <stringProp name="Authorization.url">http://34.245.79.124:5000</stringProp>
               <stringProp name="Authorization.username">performance</stringProp>
               <stringProp name="Authorization.password">superpassword</stringProp>
               <stringProp name="Authorization.domain"></stringProp>
@@ -61,7 +61,7 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">34.251.45.34</stringProp>
+          <stringProp name="HTTPSampler.domain">34.245.79.124</stringProp>
           <stringProp name="HTTPSampler.port">5000</stringProp>
           <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
@@ -253,7 +253,7 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">34.251.45.34</stringProp>
+          <stringProp name="HTTPSampler.domain">34.245.79.124</stringProp>
           <stringProp name="HTTPSampler.port">5000</stringProp>
           <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
