@@ -1,0 +1,137 @@
+#!groovy
+/* Copyright Telefonica Digital
+CDO QA Team <qacdo@telefonica.com>
+Support: WT-Jenkins */
+/*
+https://jenkins.io/doc/pipeline/steps/performance/
+https://www.blazemeter.com/blog/how-to-use-the-jenkins-performance-plugin
+https://github.com/jenkinsci/performance-plugin/blob/master/src/main/java/hudson/plugins/performance/PerformancePublisher.java
+*/
+env.JOB_NAME = "${env.JOB_NAME.replaceFirst('.+?/', '').replace('%2F', '/')}"
+url_repo = 'https://github.com/Telefonica/qacdco-performance'
+class_repo = 'GithubWeb'
+env.QA_REPORTER_URL = 'http://qacdco.hi.inet/pre-performance/reporter'
+env.vmUser = 'ubuntu'
+env.PERFORMANCE_PROJECT_NAME = 'proyecto1'
+
+def jenkinsInstance = [
+    perfMasterInstance:"qa-cdo-perf"
+]
+
+/* Define project properties */
+
+def projectProperties = [
+        buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '30')),
+        disableConcurrentBuilds(),
+        parameters([
+            string(defaultValue: "hostname", description: 'HOST_INJECTOR', name: 'HOST_INJECTOR'),
+            string(defaultValue: "60", description: 'Test duration in seconds', name: 'DURATION'),
+            string(defaultValue: '1', description: 'USER_COUNT', name: 'USER_COUNT'),
+            string(defaultValue: '1', description: 'SPAWN_RATE', name: 'SPAWN_RATE'),
+            string(defaultValue: "javier_jmeter_test", description: 'Performance Project branch', name: 'GIT_BRANCH'),
+            string(defaultValue: 'Locust Example', description: 'Performance Modulo', name: 'SCENARIO'),
+            string(defaultValue: '1', description: 'Value of sampling', name: 'SAMPLING'),
+            string(defaultValue: 'ex1', description: 'Performance execution name', name: 'PERFORMANCE_EXECUTION_NAME'),
+            string(defaultValue: 'global.py', description: 'name of test to execute', name: 'TEST'),
+            string(defaultValue: 'https://blazedemo.com/', description: 'Target Host', name: 'TARGET_HOST'),
+            string(defaultValue: 'ALL', description: '''names of tags to execute: testRequest or ALL''', name: 'TAGS')
+        ])
+]
+properties(projectProperties)
+node (jenkinsInstance["perfMasterInstance"]) {
+    wrap([$class: 'AnsiColorBuildWrapper']) {
+        try{
+            stage('Clean') {
+                cleanWs notFailBuild: true
+            }
+            stage('Checkout') {
+                // Running job info
+                echo "job name: ${env.JOB_NAME}"
+                echo "branch name: ${GIT_BRANCH}"
+                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+                checkout([
+					$class: 'GitSCM',
+					userRemoteConfigs: [[
+						credentialsId: 'df82f4c6-562c-4f38-b77d-6d2fc4213688', //CONTINT user id to github
+						refspec: "+refs/heads/${GIT_BRANCH}:refs/remotes/origin/${GIT_BRANCH}",  // Where you search branch to checkout
+						url: url_repo
+						]],				
+					branches: [[name: "refs/heads/${GIT_BRANCH}"]],
+					browser: [$class: class_repo, repoUrl: url_repo],
+					doGenerateSubmoduleConfigurations: false,
+					extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'Framework'], 
+					    [$class: 'CloneOption', timeout: 20, noTags: false, honorRefspec: true]],
+					submoduleCfg: []
+					])
+            }
+            stage('Environment'){
+                env.TAGS = "$TAGS"
+                sh 'echo AUTH_KEY=$AUTH_KEY >> Framework/performance/.env'
+                sh 'echo TEST=$TEST >> Framework/performance/.env'
+                sh 'echo SAMPLING=$SAMPLING >> Framework/performance/.env'
+                if ("$TAGS" != 'ALL')
+                {
+                    sh 'echo TAGS=$TAGS >> Framework/performance/.env'
+                }
+            }
+            stage('Deployment'){
+				try{
+                    echo "Injector work directory cleanup..."
+				    sh "ssh ubuntu@$HOST_INJECTOR \'rm -rf /home/ubuntu/test_locust/*\'"
+					echo "Deploying injector ..."
+					sh 'scp -r Framework/performance ubuntu@$HOST_INJECTOR:/home/ubuntu/test_locust'
+					sh 'ssh ubuntu@$HOST_INJECTOR < Framework/performance/injectors/commands.txt'
+				}
+				catch(error){
+					   currentBuild.result = 'UNSTABLE'
+				}
+			
+			}
+            stage('Run performance test'){
+                try{
+                    sh 'sleep 5'
+                    sh returnStdout: true , script:'sh Framework/performance/scripts/runner-injector.sh'
+                }
+                /* Catch error in test stage for notify failed test and run other stages */
+                catch(error){
+                       currentBuild.result = 'FAILURE'
+                }
+            }
+
+            stage('Collecting all data'){
+                try{
+                    sh returnStdout: true , script: "curl -s http://${HOST_INJECTOR}:8089/csv_results.csv > locust_results.csv"
+                    echo "+++ Query data to QA Reporter"
+                    sh returnStdout: true , script: 'sh Framework/performance/scripts/upload_to_reporter.sh'
+                }
+                /* Catch error in test stage for notify failed test and run other stages */
+                catch(error){
+                       currentBuild.result = 'FAILURE'
+                }
+            }
+        }
+        catch (error){
+            echo "Pipeline failed!"
+        }
+        finally {
+            archiveArtifacts '*.*'
+            perfReport([
+               sourceDataFiles: 'locust_results.csv',
+               modeEvaluation: false,
+               modeOfThreshold: true,
+               failBuildIfNoResultFile: true,
+               errorUnstableThreshold: 10,
+               errorFailedThreshold: 20,
+               relativeUnstableThresholdNegative: -100.0,
+               relativeUnstableThresholdPositive: 300.0,
+               relativeFailedThresholdNegative: -200.0,
+               relativeFailedThresholdPositive: 400.0,
+               compareBuildPrevious: true,
+               configType: 'PRT',
+               percentiles: '50,90,95,99,99.9,100'
+            ])
+            // 1st Only achieve the Locust test results to obtain the small report
+            //*archiveArtifacts '**/*.*'
+        }
+    }
+}
