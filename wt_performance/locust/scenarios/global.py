@@ -1,31 +1,16 @@
-from locust import HttpUser, task
-import re
-from api.project_api import *
-from common.utils import *
-from common.hooks import *
+from locust import HttpUser, task, between, events, tag
+from common.hooks import JmeterListener
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),os.path.pardir, 'apis'))
+from apis import *
 
-environment="xxx.com"
+class QuickstartUser(HttpUser):
+    @tag('testRequest')
+    @task
+    def testRequest(self):
+        request = testRequest()
+        self.client.get(url = request.url, headers = request.headers, name = request.name)
 
-class ProjectFeature (HttpUser):
-    @task(1)
-    def test_case_1 (self):
-        request = RequestXxx(environment)
-        logger.debug(f"Url to XXX: {request.url} and headers {request.headers}")
-        response = self.client.get(name = request.name,
-                                    url = request.url,
-                                    headers = request.headers)
-        logger.debug(f"Response content for XXX: {response.content}")
-
-
-        token_id = re.findall("token\":\"([^\"]+)",response.text)[0]
-        
-
-        request = RequestYyy(token_id, environment)
-        logger.debug(f"Url to YYY: {request.url} and headers {request.headers}")
-        response = self.client.post(name = request.name,    
-                                     url = request.url,
-                                     headers = request.headers)
-        logger.debug(f"Response content for YYY: {response.content}")
-        
-    
-#        conversation_id = re.findall("conversationId\": \"([^\"]+)",response.text)[0] ## regular expression to get conversationId
+@events.init.add_listener
+def on_locust_init(environment, **kwargs):
+    JmeterListener(env=environment, testplan="testPlan")
