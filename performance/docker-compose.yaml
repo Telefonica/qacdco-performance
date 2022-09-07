@@ -8,7 +8,6 @@ services:
     volumes:
      - /home/ubuntu/test_locust/performance:/mnt/performance
     environment:
-     - AUTH_KEY=$AUTH_KEY
      - SAMPLING=$SAMPLING
     command: -f /mnt/performance/scenarios/$TEST --master -H https://blazedemo.com/ --tags $TAGS
   
@@ -17,6 +16,5 @@ services:
     volumes:
      - /home/ubuntu/test_locust/performance:/mnt/performance
     environment:
-     - AUTH_KEY=$AUTH_KEY
      - SAMPLING=$SAMPLING
     command: -f /mnt/performance/scenarios/$TEST --worker --master-host master --tags $TAGS
