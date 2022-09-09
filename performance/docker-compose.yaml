@@ -9,7 +9,7 @@ services:
      - /home/ubuntu/test_locust/performance:/mnt/performance
     environment:
      - SAMPLING=$SAMPLING
-    command: -f /mnt/performance/scenarios/$TEST,/mnt/performance/scenarios/shapes.py --master -H https://blazedemo.com/ --tags $TAGS
+    command: -f /mnt/performance/scenarios/$TEST --master -H https://blazedemo.com/ --tags $TAGS
   
   worker:
     build: injectors/
@@ -17,4 +17,4 @@ services:
      - /home/ubuntu/test_locust/performance:/mnt/performance
     environment:
      - SAMPLING=$SAMPLING
-    command: -f /mnt/performance/scenarios/$TEST,/mnt/performance/scenarios/shapes.py --worker --master-host master --tags $TAGS
+    command: -f /mnt/performance/scenarios/$TEST --worker --master-host master --tags $TAGS
