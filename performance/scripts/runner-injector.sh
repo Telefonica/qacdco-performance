@@ -1,4 +1,4 @@
-DATA="user_count=${USER_COUNT}&spawn_rate=${SPAWN_RATE}&host=${TARGET_HOST}"
+DATA="shape_class=${SHAPE_CLASS}&user_count=${USER_COUNT}&spawn_rate=${SPAWN_RATE}&host=${TARGET_HOST}"
 echo "Performance Tests execution"
 
 echo -e "\n+++ Starting sysstat daemons for the injector"

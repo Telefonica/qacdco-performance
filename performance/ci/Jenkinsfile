@@ -28,6 +28,7 @@ def projectProperties = [
             string(defaultValue: "60", description: 'Test duration in seconds', name: 'DURATION'),
             string(defaultValue: '1', description: 'USER_COUNT', name: 'USER_COUNT'),
             string(defaultValue: '1', description: 'SPAWN_RATE', name: 'SPAWN_RATE'),
+            string(defaultValue: '', description: 'Select the Custom Shape Class you will use in this test (shapes.py) JmeterTestShape', name: 'SHAPE_CLASS'),
             string(defaultValue: "javier_jmeter_test", description: 'Performance Project branch', name: 'GIT_BRANCH'),
             string(defaultValue: 'Locust Example', description: 'Performance Modulo', name: 'SCENARIO'),
             string(defaultValue: '1', description: 'Value of sampling', name: 'SAMPLING'),
