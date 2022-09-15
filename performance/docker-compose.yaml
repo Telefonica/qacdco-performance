@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  master:
+    build: injectors/
+    ports:
+     - "8089:8089"
+    volumes:
+     - /home/ubuntu/test_locust/performance:/mnt/performance
+    environment:
+     - SAMPLING=$SAMPLING
+    command: -f /mnt/performance/scenarios/$TEST --master -H https://blazedemo.com/ --tags $TAGS
+  
+  worker:
+    build: injectors/
+    volumes:
+     - /home/ubuntu/test_locust/performance:/mnt/performance
+    environment:
+     - SAMPLING=$SAMPLING
+    command: -f /mnt/performance/scenarios/$TEST --worker --master-host master --tags $TAGS
