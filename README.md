@@ -8,4 +8,4 @@
     * In the following jenkins job [link](https://pro-dcip-qacdo-01.hi.inet/job/WT_PERFORMANCE/job/locust_infra_test), click on "***Build with Parameters***" button in the left panel. Fill in the parameter "**HOST_INJECTOR**" with the ip of the injector to use. The rest of the parameters can be modified as needed, but with the default settings, the test is functional.
 
 3. Review of metrics:
-    Although our Jenkins pipeline generates graphs of results. More information and metrics can be found in the [Performance Reporter](http://qacdco.hi.inet/pre-performance/reporter/projects), to see them, go to the Performance Reporter and access the execution performed within the LOCUST project for a better analysis.
+    * Although our Jenkins pipeline generates graphs of results. More information and metrics can be found in the [Performance Reporter](http://qacdco.hi.inet/pre-performance/reporter/projects), to see them, go to the Performance Reporter and access the execution performed within the LOCUST project for a better analysis.
