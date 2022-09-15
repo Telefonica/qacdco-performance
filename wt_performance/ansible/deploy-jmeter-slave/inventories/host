@@ -1,3 +1,0 @@
-# https://docs.ansible.com/ansible/2.3/intro_inventory.html
-[jMeter_nodes]
-perf0 ansible_host=host_name ansible_port=22 ansible_user=host_user
