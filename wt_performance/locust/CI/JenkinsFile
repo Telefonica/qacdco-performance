@@ -76,10 +76,10 @@ node (jenkinsInstance["perfMasterInstance"]) {
             stage('Deployment'){
 				try{
                     echo "Injector work directory cleanup..."
-				    sh "ssh ubuntu@$HOST_INJECTOR \'rm -rf /home/ubuntu/test_locust/*\'"
+				    sh "ssh $vmUser@$HOST_INJECTOR \'rm -rf /home/$vmUser/test_locust/*\'"
 					echo "Deploying injector ..."
-					sh 'scp -r Framework/performance ubuntu@$HOST_INJECTOR:/home/ubuntu/test_locust'
-					sh 'ssh ubuntu@$HOST_INJECTOR < Framework/performance/injectors/commands.txt'
+					sh 'scp -r Framework/performance $vmUser@$HOST_INJECTOR:/home/$vmUser/test_locust'
+					sh 'ssh $vmUser@$HOST_INJECTOR < Framework/performance/injectors/commands.txt'
 				}
 				catch(error){
 					   currentBuild.result = 'UNSTABLE'
