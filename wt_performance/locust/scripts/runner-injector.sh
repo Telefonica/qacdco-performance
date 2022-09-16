@@ -1,3 +1,4 @@
+#!/bin/bash
 DATA="user_count=${USER_COUNT}&spawn_rate=${SPAWN_RATE}&host=${TARGET_HOST}"
 echo "Performance Tests execution"
 

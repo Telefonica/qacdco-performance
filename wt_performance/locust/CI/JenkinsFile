@@ -28,7 +28,7 @@ def projectProperties = [
             string(defaultValue: "60", description: 'Test duration in seconds', name: 'DURATION'),
             string(defaultValue: '1', description: 'USER_COUNT', name: 'USER_COUNT'), // Number of Locust users
             string(defaultValue: '1', description: 'SPAWN_RATE', name: 'SPAWN_RATE'), // Rate of user Spawn (per second)
-            string(defaultValue: "javier_jmeter_test", description: 'Performance Project branch', name: 'GIT_BRANCH'), // Branch to get the test from
+            string(defaultValue: "master", description: 'Performance Project branch', name: 'GIT_BRANCH'), // Branch to get the test from
             string(defaultValue: 'Locust Example', description: 'Performance Modulo', name: 'SCENARIO'), // Performance Reporter Module
             string(defaultValue: '1', description: 'Value of sampling', name: 'SAMPLING'), // Value of sampling, 1 will not sample anything, grabbing every request
             string(defaultValue: 'ex1', description: 'Performance execution name', name: 'PERFORMANCE_EXECUTION_NAME'), // Name of the execution to see in the Performance Reporter
