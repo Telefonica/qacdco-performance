@@ -1,0 +1,3 @@
+# Framework Performance CDO 
+
+This repository is the Telefonica's CDO Performance Testing Framework, it currently uses two different technologies, Locust (Python library) and Jmeter (Java based standalone application) you can find more information about each one and guides on how to set them both up, read [this confluence post](https://confluence.tid.es/pages/viewpage.action?pageId=73025608#id-[CTO]PerformanceTeamEstrategiayMetodolog%C3%ADa(WIP)-Monitorizaci%C3%B3nyan%C3%A1lisis).
