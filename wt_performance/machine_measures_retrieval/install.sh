@@ -27,7 +27,6 @@ chown prometheus:prometheus /etc/prometheus/prometheus.yml
 
 wget https://github.com/prometheus/node_exporter/releases/download/v1.4.0-rc.0/node_exporter-1.4.0-rc.0.linux-amd64.tar.gz -O "/tmp/node_exporter.tar.gz"
 tar -xf "/tmp/node_exporter.tar.gz" -C "/tmp"
-mv "/tmp/node_exporter-1.4.0-rc.0.linux-amd64" "/tmp/node_exporter"
 mv "/tmp/node_exporter-1.4.0-rc.0.linux-amd64/node_exporter" "/usr/local/bin/"
 
 echo "[Unit]
