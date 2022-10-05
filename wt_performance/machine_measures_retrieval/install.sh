@@ -5,7 +5,7 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-sudo useradd -rs /bin/false node_exporter
+useradd -rs /bin/false node_exporter
 
 useradd --no-create-home --shell /bin/false prometheus
 mkdir /etc/prometheus
