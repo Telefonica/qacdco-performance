@@ -1,6 +1,6 @@
 # Machine Metrics Retrieval Script
 An important part of running performance tests is to make sure that the machines running the tests are not overloaded, for that the Performance Framework has a script that will install Prometheus (monitoring and alerting system) and node_exporter (prometheus module that takes the resource usage metrics), to export the Hardware and Operating System usage metrics to the Grafana of the project.
-## Instalation
+## Installation
  Clone the performance repository on the injector machine 
  
  ``git clone https://github.com/Telefonica/qacdco-performance``
