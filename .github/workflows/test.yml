@@ -1,5 +1,5 @@
 name: CI
-on: workflows_dispatch
+on: workflow_dispatch
 
 jobs:
   locust:
