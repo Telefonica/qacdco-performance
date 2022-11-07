@@ -1,4 +1,4 @@
-name: CI
+name: CI_Performance
 on: workflow_dispatch
 
 jobs:
