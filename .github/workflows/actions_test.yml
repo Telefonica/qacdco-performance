@@ -1,0 +1,11 @@
+name: CI_Performance
+on: workflow_dispatch
+
+jobs:
+  locust:
+    runs-on: self-hosted
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: deploy master and inyectors
+      run: docker-compose -f performance/docker-compose.yaml up -d --force-recreate
