@@ -3,7 +3,7 @@ import io
 import json
 import re
 import requests
-
+import sys
 import shlex
 
 import shutil
@@ -26,12 +26,19 @@ def url_type(arg_value, pat=re.compile(r"^https?://.+$")):
 def split_queries(pp):
     return shlex.split(pp)
 
+def user_pass_type(value):
+    print(value, file=sys.stderr)
+    if len(value.split(':')) != 2:
+        raise argparse.ArgumentTypeError("user_pass must be in the format 'user:password'")
+    return value
+
 def argument_parser() -> Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--version", action="version", version=version)
 
     parser.add_argument("-u", "--prometheus_url", required=True, type=url_type, help="prometheus base url")
     parser.add_argument("-a", "--auth", required=False, help="prometheus basic auth in base64")
+    parser.add_argument("-x", "--user_pass", type=user_pass_type, required=False, help="prometheus user:password")
     parser.add_argument("-s", "--start_date", required=True, help="Metrics start date in epoch format")
     parser.add_argument("-e", "--end_date", required=True, help="Metrics end date in epoch format")
     parser.add_argument("-t", "--step", required=True, help="Metrics step in seconds")
@@ -40,9 +47,13 @@ def argument_parser() -> Namespace:
     return parser.parse_args()
 
 
-def create_http_session(basic_auth: str) -> requests.Session:
+def create_http_session(basic_auth: str, type) -> requests.Session:
     http = requests.Session()
-    http.headers["Authorization"] = f"Basic {basic_auth}"
+    if (type == 0):
+        http.headers["Authorization"] = f"Basic {basic_auth}"
+    elif (type == 1):
+        credentials = basic_auth.split(':')
+        http.auth = (credentials[0], credentials[1])
     http.verify = False
     return http
 
@@ -65,7 +76,10 @@ def main():
     args = argument_parser()
     print("Executing Script Prometheus chart exporter version", version)
     metrics_values = []
-    http_session = create_http_session(args.auth)
+    if (args.auth is not None):
+        http_session = create_http_session(args.auth, 0)
+    elif (args.user_pass is not None):
+        http_session = create_http_session(args.user_pass, 1)
     out_buff = io.StringIO()
     for query in args.queries:
         values = get_metric(http_session, args.prometheus_url, args.start_date, args.end_date, args.step, query)["data"]
