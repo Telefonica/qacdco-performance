@@ -27,7 +27,6 @@ def split_queries(pp):
     return shlex.split(pp)
 
 def user_pass_type(value):
-    print(value, file=sys.stderr)
     if len(value.split(':')) != 2:
         raise argparse.ArgumentTypeError("user_pass must be in the format 'user:password'")
     return value
@@ -76,10 +75,12 @@ def main():
     args = argument_parser()
     print("Executing Script Prometheus chart exporter version", version)
     metrics_values = []
-    if (args.auth is not None):
+    if (args.auth is not None) :
         http_session = create_http_session(args.auth, 0)
     elif (args.user_pass is not None):
         http_session = create_http_session(args.user_pass, 1)
+    else :
+        http_session = create_http_session(args.auth, 2)
     out_buff = io.StringIO()
     for query in args.queries:
         values = get_metric(http_session, args.prometheus_url, args.start_date, args.end_date, args.step, query)["data"]
