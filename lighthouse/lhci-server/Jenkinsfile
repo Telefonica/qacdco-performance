@@ -23,7 +23,7 @@ node('master') {
             }
 
             LAST_COMMIT = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-            RELEASE_TAG_VERSION = readFile(file: 'VERSION').trim()
+            RELEASE_TAG_VERSION = readFile(file: 'lighthouse/lhci-server/VERSION').trim()
 
             IMAGE_NAME = 'lhci-server'
 
