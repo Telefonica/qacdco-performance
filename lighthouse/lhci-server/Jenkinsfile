@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /**
- * This Jenkinsfile is called from the auto generated job "QACDCO-OFFICE/QA-REPORTER/build-image-backend" from https://github.com/Telefonica/qacdco-office/blob/master/ci/dsl/init_jobs.groovy
+ * This Jenkinsfile is called from the auto generated job "WT_PERFORMANCE/LIGHTHOUSE/build-image-lighthouse" from https://github.com/Telefonica/qacdco-office/blob/master/ci/dsl/init_jobs.groovy
  * JOB PARAMETERS:
  *    - BRANCH
  *    - GENERATE_FINAL_RELEASE
