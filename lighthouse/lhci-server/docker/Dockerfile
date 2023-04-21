@@ -1,4 +1,4 @@
-FROM node:16-bullseye-slim
+FROM dockerhub.hi.inet/node:16-bullseye-slim
 
 # Install utilities
 RUN apt-get update --fix-missing && apt-get install -y python build-essential && apt-get clean
