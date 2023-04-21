@@ -16,12 +16,6 @@ node('master') {
                 checkout scm
             }
 
-            stage('Decrypt files') {
-                withCredentials([file(credentialsId: 'GC_QACDCO_SECRET_KEY', variable: 'FILE')]) {
-                    sh 'git-crypt unlock $FILE'
-                }
-            }
-
             LAST_COMMIT = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
             RELEASE_TAG_VERSION = readFile(file: 'lighthouse/lhci-server/VERSION').trim()
 
@@ -32,24 +26,6 @@ node('master') {
                 RELEASE_TAG_VERSION = "$RELEASE_TAG_VERSION-$LAST_COMMIT"
             }
             DOCKER_IMAGE = "dockerhub.hi.inet/qacdco/qa-performance/$IMAGE_NAME:$RELEASE_TAG_VERSION"
-
-            if (GENERATE_FINAL_RELEASE == 'true') {
-                stage('Check Release') {
-                    withCredentials([string(credentialsId: 'github_token_cred', variable: 'GITHUB_TOKEN')]) {
-                        repoUrl = scm.getUserRemoteConfigs()[0].getUrl()
-                        repoName = repoUrl.substring(repoUrl.lastIndexOf('/') + 1)
-                        apiUrl = "https://api.github.com/repos/Telefonica/$repoName/releases/tags/$RELEASE_TAG_VERSION"
-                        def apiResponse = sh(
-                                returnStdout: true,
-                                script: "curl -sS -H 'Authorization: token ${GITHUB_TOKEN}' ${apiUrl}"
-                        )
-
-                        if (apiResponse.startsWith('{"id":')) {
-                            error "Release $RELEASE_TAG_VERSION already exists"
-                        }
-                    }
-                }
-            }
 
             stage('Prepare env') {
                 sh "cp -r ./lighthouse/lhci-server/docker ."
@@ -64,17 +40,6 @@ node('master') {
 
             stage('Publish Image') {
                 sh "docker push ${DOCKER_IMAGE}"
-            }
-
-            if (GENERATE_FINAL_RELEASE == 'true') {
-                stage('Github Release') {
-                    withCredentials([string(credentialsId: 'github_token_cred', variable: 'GITHUB_TOKEN')]) {
-                        def branchWithoutOrigin = BRANCH.replace('origin/', '')
-                        body = "{\"tag_name\":\"$RELEASE_TAG_VERSION\", \"name\":\"$RELEASE_TAG_VERSION\", \"target_commitish\":\"$branchWithoutOrigin\" }"
-                        repoName = repoUrl.substring(repoUrl.lastIndexOf('/') + 1)
-                        sh "curl -X POST -H 'Accept: application/json' -H 'Authorization: token $GITHUB_TOKEN' https://api.github.com/repos/telefonica/${repoName}/releases -d '$body'"
-                    }
-                }
             }
         }
         catch (error) {
