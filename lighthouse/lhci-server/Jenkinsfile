@@ -1,0 +1,55 @@
+#!/usr/bin/env groovy
+/**
+ * This Jenkinsfile is called from the auto generated job "WT_PERFORMANCE/LIGHTHOUSE/build-image-lighthouse" from https://github.com/Telefonica/qacdco-office/blob/master/ci/dsl/init_jobs.groovy
+ * JOB PARAMETERS:
+ *    - BRANCH
+ *    - GENERATE_FINAL_RELEASE
+ */
+
+node('master') {
+    ansiColor('xterm') {
+        environment {
+            DOCKER_IMAGE = ''
+        }
+        try {
+            stage('Checkout') {
+                checkout scm
+            }
+
+            LAST_COMMIT = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+            RELEASE_TAG_VERSION = readFile(file: 'lighthouse/lhci-server/VERSION').trim()
+
+            IMAGE_NAME = 'lhci-server'
+
+            if (GENERATE_FINAL_RELEASE != 'true') {
+                IMAGE_NAME = "$IMAGE_NAME-dev"
+                RELEASE_TAG_VERSION = "$RELEASE_TAG_VERSION-$LAST_COMMIT"
+            }
+            DOCKER_IMAGE = "dockerhub.hi.inet/qacdco/qa-performance/$IMAGE_NAME:$RELEASE_TAG_VERSION"
+
+            stage('Prepare env') {
+                sh "cp -r ./lighthouse/lhci-server/docker ."
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'ldap_user', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                    sh "docker login -u $USERNAME -p $PASSWORD dockerhub.hi.inet"
+                }
+            }
+
+            stage('Build Image') {
+                sh "docker build -t ${DOCKER_IMAGE} ./docker"
+            }
+
+            stage('Publish Image') {
+                sh "docker push ${DOCKER_IMAGE}"
+            }
+        }
+        catch (error) {
+            print(error)
+            currentBuild.result = 'FAILURE'
+        }
+        finally {
+            stage('Delete Image') {
+                sh "docker rmi -f ${DOCKER_IMAGE}"
+            }
+        }
+    }
+}
