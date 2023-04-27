@@ -26,6 +26,17 @@ def url_type(arg_value, pat=re.compile(r"^https?://.+$")):
 def split_queries(pp):
     return shlex.split(pp)
 
+def split_graphs_info(values_list):
+    return values_list.split(';')
+
+def get_graph_info(graph_str):
+    graph_list = graph_str.split(",")
+    graph_dict = {
+        "title": graph_list[0],
+        "y_units": graph_list[1]
+    }
+    return graph_dict
+
 def user_pass_type(value):
     if len(value.split(':')) != 2:
         raise argparse.ArgumentTypeError("user_pass must be in the format 'user:password'")
@@ -42,6 +53,8 @@ def argument_parser() -> Namespace:
     parser.add_argument("-e", "--end_date", required=True, help="Metrics end date in epoch format")
     parser.add_argument("-t", "--step", required=True, help="Metrics step in seconds")
     parser.add_argument("-q", "--queries", type=split_queries, required=True, help="Metric queries, space separated values")
+    parser.add_argument("-i", "--graphs_info", type=split_queries, required=True,
+                        help="Graphs info: titles and axis units, space separated values")
 
     return parser.parse_args()
 
@@ -82,11 +95,14 @@ def main():
     else :
         http_session = create_http_session(args.auth, 2)
     out_buff = io.StringIO()
-    for query in args.queries:
-        values = get_metric(http_session, args.prometheus_url, args.start_date, args.end_date, args.step, query)["data"]
+    for query, graph_info in zip(args.queries, args.graphs_info):
+        graph_info_dict = get_graph_info(graph_info)
+        values = get_metric(http_session, args.prometheus_url,
+                            args.start_date, args.end_date, args.step, query)["data"]
         dataframe = to_pandas(values)
         create_chart(query, dataframe, out_buff)
-        metrics_values.append({"expr": query, "result": values})
+        metrics_values.append({"expr": query, "title": graph_info_dict["title"],
+                                "y_units": graph_info_dict["y_units"], "result": values})
 
     with open("output.json", "w", newline="") as file:
         file.write(json.dumps(metrics_values))
