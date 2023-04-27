@@ -70,10 +70,6 @@ parameters:
     description: Application name
     value: lhci-server
     required: true
-  - name: TARGET
-    description: Target - pre, prod
-    value: pre
-    required: true
   - name: CONTAINER_IMAGE_ENV
     displayName: Docker image env
     description: -dev
