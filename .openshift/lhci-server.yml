@@ -43,7 +43,7 @@ objects:
               imagePullPolicy: Always
               name: ${APPLICATION_NAME}
               ports:
-                - containerPort: 80
+                - containerPort: 9001
               volumeMounts:
                 - name: lhci-data
                   mountPath: /data
