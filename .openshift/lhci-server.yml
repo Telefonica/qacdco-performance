@@ -11,8 +11,8 @@ objects:
         app: ${APPLICATION_NAME}
     spec:
       ports:
-        - name: 80-tcp
-          port: 80
+        - name: 9001-tcp
+          port: 9001
           protocol: TCP
       selector:
         app: "${APPLICATION_NAME}"
