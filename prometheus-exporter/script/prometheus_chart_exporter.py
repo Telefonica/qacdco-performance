@@ -22,7 +22,6 @@ def url_type(arg_value, pat=re.compile(r"^https?://.+$")):
         raise argparse.ArgumentTypeError(f"invalid url value: {arg_value}")
     return arg_value
 
-
 def split_queries(pp):
     return shlex.split(pp)
 
@@ -42,6 +41,12 @@ def user_pass_type(value):
         raise argparse.ArgumentTypeError("user_pass must be in the format 'user:password'")
     return value
 
+def validate_query_and_graph_info_count(parser, queries, graphs_info):
+    if len(queries) != len(graphs_info):
+        print("Error: The number of queries and graphs_info must be equal.")
+        parser.print_help()
+        sys.exit(1)
+
 def argument_parser() -> Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--version", action="version", version=version)
@@ -54,9 +59,13 @@ def argument_parser() -> Namespace:
     parser.add_argument("-t", "--step", required=True, help="Metrics step in seconds")
     parser.add_argument("-q", "--queries", type=split_queries, required=True, help="Metric queries, space separated values")
     parser.add_argument("-i", "--graphs_info", type=split_queries, required=True,
-                        help="Graphs info: titles and axis units, space separated values")
-
-    return parser.parse_args()
+                        help="Graphs info: titles and axis units for each graph, separated by semicolons. "
+                             "Each graph's info should include the title, followed by a comma, and the y-axis unit. "
+                             "For example: 'authserver_tps,tps; authserver_replicas,n_replicas'. "
+                             "The number of graph info elements must match the number of queries provided in --queries.")
+    args = parser.parse_args()
+    validate_query_and_graph_info_count(parser, args.queries, args.graphs_info)
+    return args
 
 
 def create_http_session(basic_auth: str, type) -> requests.Session:
@@ -78,12 +87,6 @@ def get_metric(http_session: requests.Session, base_url: str, start_date: int, e
     response.raise_for_status()
     return response.json()
 
-
-def create_chart(title: str, table: DataFrame, buffer: io.StringIO):
-    fig = px.line(table, title=title)
-    fig.write_html(buffer)
-
-
 def main():
     args = argument_parser()
     print("Executing Script Prometheus chart exporter version", version)
@@ -94,25 +97,15 @@ def main():
         http_session = create_http_session(args.user_pass, 1)
     else :
         http_session = create_http_session(args.auth, 2)
-    out_buff = io.StringIO()
     for query, graph_info in zip(args.queries, args.graphs_info):
         graph_info_dict = get_graph_info(graph_info)
         values = get_metric(http_session, args.prometheus_url,
                             args.start_date, args.end_date, args.step, query)["data"]
-        dataframe = to_pandas(values)
-        create_chart(query, dataframe, out_buff)
         metrics_values.append({"expr": query, "title": graph_info_dict["title"],
                                 "y_units": graph_info_dict["y_units"], "result": values})
 
     with open("output.json", "w", newline="") as file:
         file.write(json.dumps(metrics_values))
-
-    with open("output.html", "w", newline="") as file:
-        out_buff.seek(0)
-        shutil.copyfileobj(out_buff, file)
-
-    out_buff.close()
-
 
 if __name__ == "__main__":
     main()
