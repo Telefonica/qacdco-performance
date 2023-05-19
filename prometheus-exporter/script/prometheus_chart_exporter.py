@@ -63,6 +63,8 @@ def argument_parser() -> Namespace:
                              "Each graph's info should include the title, followed by a comma, and the y-axis unit. "
                              "For example: 'authserver_tps,tps; authserver_replicas,n_replicas'. "
                              "The number of graph info elements must match the number of queries provided in --queries.")
+    parser.add_argument("-g", "--generate_graphs", required=False, 
+                        help="If set on True, generate the graphs. Otherwise, only the JSON is generated.")
     args = parser.parse_args()
     validate_query_and_graph_info_count(parser, args.queries, args.graphs_info)
     return args
@@ -87,6 +89,17 @@ def get_metric(http_session: requests.Session, base_url: str, start_date: int, e
     response.raise_for_status()
     return response.json()
 
+def create_chart(title: str, table: DataFrame, buffer: io.StringIO, y_axes: str):
+    fig = px.line(table, title=title)
+    fig.update_layout(title={
+        'text': title,
+        'x': 0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'
+        })
+    fig.update_yaxes(title_text=y_axes)
+    fig.write_html(buffer)
+
 def main():
     args = argument_parser()
     print("Executing Script Prometheus chart exporter version", version)
@@ -97,15 +110,27 @@ def main():
         http_session = create_http_session(args.user_pass, 1)
     else :
         http_session = create_http_session(args.auth, 2)
+    out_buff = io.StringIO()
     for query, graph_info in zip(args.queries, args.graphs_info):
         graph_info_dict = get_graph_info(graph_info)
         values = get_metric(http_session, args.prometheus_url,
                             args.start_date, args.end_date, args.step, query)["data"]
+        dataframe = to_pandas(values)
+        print( "generate_graphs=", args.generate_graphs, file=sys.stderr)
+        if args.generate_graphs == "True":
+            create_chart(graph_info_dict["title"], dataframe, out_buff, graph_info_dict["y_units"])
         metrics_values.append({"expr": query, "title": graph_info_dict["title"],
                                 "y_units": graph_info_dict["y_units"], "result": values})
 
     with open("output.json", "w", newline="") as file:
         file.write(json.dumps(metrics_values))
+
+    if args.generate_graphs == "True":
+        with open("output.html", "w", newline="") as file:
+            out_buff.seek(0)
+            shutil.copyfileobj(out_buff, file)
+
+    out_buff.close()
 
 if __name__ == "__main__":
     main()
