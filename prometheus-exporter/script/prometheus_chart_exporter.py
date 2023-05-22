@@ -5,14 +5,13 @@ import re
 import requests
 import sys
 import shlex
-
 import shutil
-
 import plotly.express as px
 
 from argparse import Namespace
 from pandas import DataFrame
 from prometheus_pandas.query import to_pandas
+
 
 version = "1.0.0"
 
@@ -22,11 +21,14 @@ def url_type(arg_value, pat=re.compile(r"^https?://.+$")):
         raise argparse.ArgumentTypeError(f"invalid url value: {arg_value}")
     return arg_value
 
+
 def split_queries(pp):
     return shlex.split(pp)
 
+
 def split_graphs_info(values_list):
     return values_list.split(';')
+
 
 def get_graph_info(graph_str):
     graph_list = graph_str.split(",")
@@ -36,10 +38,12 @@ def get_graph_info(graph_str):
     }
     return graph_dict
 
+
 def user_pass_type(value):
     if len(value.split(':')) != 2:
         raise argparse.ArgumentTypeError("user_pass must be in the format 'user:password'")
     return value
+
 
 def validate_query_and_graph_info_count(parser, queries, graphs_info):
     if len(queries) != len(graphs_info):
@@ -47,10 +51,10 @@ def validate_query_and_graph_info_count(parser, queries, graphs_info):
         parser.print_help()
         sys.exit(1)
 
+
 def argument_parser() -> Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--version", action="version", version=version)
-
     parser.add_argument("-u", "--prometheus_url", required=True, type=url_type, help="prometheus base url")
     parser.add_argument("-a", "--auth", required=False, help="prometheus basic auth in base64")
     parser.add_argument("-x", "--user_pass", type=user_pass_type, required=False, help="prometheus user:password")
@@ -89,6 +93,7 @@ def get_metric(http_session: requests.Session, base_url: str, start_date: int, e
     response.raise_for_status()
     return response.json()
 
+
 def create_chart(title: str, table: DataFrame, buffer: io.StringIO, y_axes: str):
     fig = px.line(table, title=title)
     fig.update_layout(title={
@@ -99,6 +104,7 @@ def create_chart(title: str, table: DataFrame, buffer: io.StringIO, y_axes: str)
         })
     fig.update_yaxes(title_text=y_axes)
     fig.write_html(buffer)
+
 
 def main():
     args = argument_parser()
@@ -131,6 +137,7 @@ def main():
             shutil.copyfileobj(out_buff, file)
 
     out_buff.close()
+
 
 if __name__ == "__main__":
     main()
