@@ -5,18 +5,31 @@ This tool provides a new tool called Prometheus Exporter, which uses Prometheus,
 ## Usage
 
 To use the Prometheus Exporter, run the following command:
+**with authorization-header authentication**
 
 ```bash
-./initDocker.sh -u [prometheus-url] -a [authorization-header] -s [start-date] -e [end-date] -t [step] -q '[prometheus-query]'
+./initDocker.sh -u [prometheus-url] -a [authorization-header] -s [start-date] -e [end-date] -t [step] -q '[prometheus-query]' -i '[graphs_info]'
 ```
+
+**with user:password authentication**
+
+```bash
+./initDocker.sh -u [prometheus-url] -x [user:password] -s [start-date] -e [end-date] -t [step] -q '[prometheus-query]' -i '[graphs_info]'
+```
+
 This will build and run a Docker container with the specified parameters. The parameters are:
 
     -u: the URL of the Prometheus server to query
-    -a: the authorization header to use when querying the Prometheus server
+    -a: the authorization header or
+    -x: user and password to use when querying the Prometheus server 
     -s: the start date of the query range in Unix timestamp format
     -e: the end date of the query range in Unix timestamp format
     -t: the step size of the query in seconds
     -q: the Prometheus query to run. This can be a single query or multiple queries separated by semicolons.
+    -i: the title of these metrics and their units in the Y axis (X-axis should always be timestamp),    separated by commas.
+    The number of metrics info elements must match the number of queries provided,
+    titles and axis units for each graph, separated by semicolons.
+    -g: Flag to generate or not the graphs on html file (by default is set on False).
 
 ## Directory Structure
 
@@ -33,6 +46,6 @@ The directory structure of the project is as follows:
 Here is an example of how to use the Prometheus Exporter tool:
 
 ```bash
-    ./initDocker.sh -u https://prometheus.example.com/metrics -a "Basic [authorization]" -s 1679359438 -e 1679445838 -t 60 -q 'sum(rate(container_cpu_usage_seconds_total{container="my-container"}[1m])) by (pod); sum(rate(container_memory_usage_bytes{container="my-container"}[1m])) by (pod)'
+    ./initDocker.sh -u https://prometheus.example.com/metrics -a "Basic [authorization]" -s 1679359438 -e 1679445838 -t 60 -q 'sum(rate(container_cpu_usage_seconds_total{container="my-container"}[1m])) by (pod); sum(rate(container_memory_usage_bytes{container="my-container"}[1m])) by (pod)' -i 'cpu usage, vCPUs; containers memory, bytes' -g True
 ```
-This will create a Docker container that queries the Prometheus server at `https://prometheus.example.com/metrics` with the provided authorization header, for the time range between `1679359438` and `1679445838`, with a step size of `60` seconds. The Prometheus queries used will be `sum(rate(container_cpu_usage_seconds_total{container="my-container"}[1m])) by (pod); sum(rate(container_memory_usage_bytes{container="my-container"}[1m])) by (pod).` 
+This will create a Docker container that queries the Prometheus server at `https://prometheus.example.com/metrics` with the provided authorization header, for the time range between `1679359438` and `1679445838`, with a step size of `60` seconds. The Prometheus queries used will be `sum(rate(container_cpu_usage_seconds_total{container="my-container"}[1m])) by (pod); sum(rate(container_memory_usage_bytes{container="my-container"}[1m])) by (pod).`The title of each metric will be "cpu usage" and "containers memory" respectively, with "vCPUs" and "bytes" as the units. With -g option set on "True" generates html graphs file.
