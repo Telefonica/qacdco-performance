@@ -23,6 +23,8 @@ def url_type(arg_value, pat=re.compile(r"^https?://.+$")):
 
 
 def split_queries(pp):
+    print("estas son las queries")
+    print(pp)
     return shlex.split(pp)
 
 
