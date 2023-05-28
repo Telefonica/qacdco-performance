@@ -91,6 +91,7 @@ def get_metric(http_session: requests.Session, base_url: str, start_date: int, e
                prometheus_query: str):
     url = f"{base_url.strip('/')}/api/v1/query_range"
     params = {"query": prometheus_query, "start": start_date, "end": end_date, "step": step}
+    print( "urls=", url, file=sys.stderr)
     response = http_session.get(url, params=params)
     response.raise_for_status()
     return response.json()
