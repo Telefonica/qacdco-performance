@@ -80,7 +80,19 @@ def get_metric(http_session: requests.Session, base_url: str, start_date: int, e
     params = {"query": prometheus_query, "start": start_date, "end": end_date, "step": step}
     response = http_session.get(url, params=params)
     response.raise_for_status()
-    return response.json()
+    #return response.json()
+    #def get_pods_list(response):
+    print(len(response))
+    pod_list = []
+    print (type(response))
+    for dataframe in response.json:
+        pod_match = re.search('pod="([a-zA-Z0-9-]+)"', dataframe)
+        if pod_match:
+            pod_value = pod_match.group(1)
+            if pod_value not in pod_list:
+                pod_list.append(pod_value)
+    print (pod_list)
+    return pod_list
 
 
 def create_chart(title: str, table: DataFrame, buffer: io.StringIO, y_axes: str):

@@ -1,17 +1,7 @@
 [
     {
-        "query": "histogram_quantile(0.9,sum(rate(kong_latency_bucket{type=\"kong\",tenant=~\"example\"}[1m]))by(le))",
-        "title": "apigw_latency_p90",
-        "y_axis": "ms"
-    },
-    {
-        "query": "sum(rate(kong_http_status{tenant=~\"example\"}[1m]))",
-        "title": "apigw_rps_p90,rps",
-        "y_axis": "rps"
-    },
-    {
-        "query": "sum(kube_deployment_spec_replicas{deployment=\"apigw\",namespace=~\"example\"})",
-        "title": "apigw_replicas_p90",
-        "y_axis": "n_replicas" 
+        "query": "kube_pod_info{pod=~\"apigw-[0-9a-z]+-[0-9a-z]+\", created_by_kind=\"ReplicaSet\", namespace=~\"baikal-shared-azure\"}",
+        "title": "apigw_pods",
+        "y_axis": "cpu_usage"
     }
 ]
