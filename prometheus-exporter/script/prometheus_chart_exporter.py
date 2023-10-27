@@ -1,86 +1,57 @@
 import argparse
 import io
 import json
-import re
 import requests
 import sys
 import shlex
 import shutil
 import plotly.express as px
-
+import os
 from argparse import Namespace
 from pandas import DataFrame
 from prometheus_pandas.query import to_pandas
+from ConfigArgs import ConfigArgs
+import yaml
 
 
-version = "1.0.0"
+version = "2.0.0"
 
-
-def url_type(arg_value, pat=re.compile(r"^https?://.+$")):
-    if not pat.match(arg_value):
-        raise argparse.ArgumentTypeError(f"invalid url value: {arg_value}")
-    return arg_value
-
-
-def split_queries(pp):
-    return shlex.split(pp)
-
-
-def split_graphs_info(values_list):
-    return values_list.split(';')
-
-
-def get_graph_info(graph_str):
-    graph_list = graph_str.split(",")
-    graph_dict = {
-        "title": graph_list[0],
-        "y_units": graph_list[1]
-    }
-    return graph_dict
-
-
-def user_pass_type(value):
-    if len(value.split(':')) != 2:
-        raise argparse.ArgumentTypeError("user_pass must be in the format 'user:password'")
-    return value
-
-
-def validate_query_and_graph_info_count(parser, queries, graphs_info):
-    if len(queries) != len(graphs_info):
-        print("Error: The number of queries and graphs_info must be equal.")
-        parser.print_help()
-        sys.exit(1)
-
-
-def argument_parser() -> Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--version", action="version", version=version)
-    parser.add_argument("-u", "--prometheus_url", required=True, type=url_type, help="prometheus base url")
-    parser.add_argument("-a", "--auth", required=False, help="prometheus basic auth in base64")
-    parser.add_argument("-x", "--user_pass", type=user_pass_type, required=False, help="prometheus user:password")
-    parser.add_argument("-s", "--start_date", required=True, help="Metrics start date in epoch format")
-    parser.add_argument("-e", "--end_date", required=True, help="Metrics end date in epoch format")
-    parser.add_argument("-t", "--step", required=True, help="Metrics step in seconds")
-    parser.add_argument("-q", "--queries", type=split_queries, required=True, help="Metric queries, space separated values")
-    parser.add_argument("-i", "--graphs_info", type=split_queries, required=True,
-                        help="Graphs info: titles and axis units for each graph, separated by semicolons. "
-                             "Each graph's info should include the title, followed by a comma, and the y-axis unit. "
-                             "For example: 'authserver_tps,tps; authserver_replicas,n_replicas'. "
-                             "The number of graph info elements must match the number of queries provided in --queries.")
-    parser.add_argument("-g", "--generate_graphs", required=False, 
-                        help="If set on True, generate the graphs. Otherwise, only the JSON is generated.")
+def get_config_file_argument() -> str:
+    parser = argparse.ArgumentParser(description="Prometheus Exporter Tool")
+    parser.add_argument("config_file", type=str, help="Path to the YAML configuration file")
     args = parser.parse_args()
-    validate_query_and_graph_info_count(parser, args.queries, args.graphs_info)
-    return args
+    return args.config_file
 
 
-def create_http_session(basic_auth: str, type) -> requests.Session:
+def read_yaml_configuration(file_name: str) -> dict:
+    with open(file_name, 'r') as file:
+        configuration = yaml.safe_load(file)
+    return configuration
+
+def yaml_parser(yaml_config: dict) -> Namespace:
+    try:
+        conf_yaml = ConfigArgs(yaml_config)
+    except yaml.YAMLError as e:
+        print("config_file:", e)
+        print("Please read the usage section of the readme for this tool.")
+        sys.exit(1)
+    return conf_yaml
+
+
+def create_http_session(authentication: list) -> requests.Session:
     http = requests.Session()
-    if (type == 0):
-        http.headers["Authorization"] = f"Basic {basic_auth}"
-    elif (type == 1):
-        credentials = basic_auth.split(':')
-        http.auth = (credentials[0], credentials[1])
+    
+    auth_type = authentication[0]["type"]
+    credentials = authentication[0]["credentials"]
+
+    if (auth_type == "None"):
+        pass
+    elif (auth_type == "basic_auth"):
+        http.headers["Authorization"] = f"Basic {credentials}"
+    elif (auth_type == "user_password"):
+        user, password = credentials.split(':')
+        http.auth = (user, password)
+    
     http.verify = False
     return http
 
@@ -106,38 +77,39 @@ def create_chart(title: str, table: DataFrame, buffer: io.StringIO, y_axes: str)
     fig.write_html(buffer)
 
 
-def main():
-    args = argument_parser()
+def main(config_file_path):
+    yaml_config = read_yaml_configuration(config_file_path)
+    args = yaml_parser(yaml_config)
     print("Executing Script Prometheus chart exporter version", version)
-    metrics_values = []
-    if (args.auth is not None) :
-        http_session = create_http_session(args.auth, 0)
-    elif (args.user_pass is not None):
-        http_session = create_http_session(args.user_pass, 1)
-    else :
-        http_session = create_http_session(args.auth, 2)
-    out_buff = io.StringIO()
-    for query, graph_info in zip(args.queries, args.graphs_info):
-        graph_info_dict = get_graph_info(graph_info)
-        values = get_metric(http_session, args.prometheus_url,
-                            args.start_date, args.end_date, args.step, query)["data"]
-        dataframe = to_pandas(values)
-        print( "generate_graphs=", args.generate_graphs, file=sys.stderr)
-        if args.generate_graphs == "True":
-            create_chart(graph_info_dict["title"], dataframe, out_buff, graph_info_dict["y_units"])
-        metrics_values.append({"expr": query, "title": graph_info_dict["title"],
-                                "y_units": graph_info_dict["y_units"], "result": values})
 
-    with open("output.json", "w", newline="") as file:
+    # Create session based on authentication
+    http_session = create_http_session(args.authentication)
+
+    metrics_values = []
+    out_buff = io.StringIO()
+    for metric in args.metrics:
+        values = get_metric(http_session, args.prometheus_url,
+                            args.start_date, args.end_date, args.step, metric["query"])["data"]
+        dataframe = to_pandas(values)
+        print("generate_graphs=", args.generate_graphs, file=sys.stderr)
+        if args.generate_graphs:
+            create_chart(metric["metric_name"], dataframe, out_buff, metric["y_axis_units"])
+        metrics_values.append({"expr": metric["query"], "title": metric["metric_name"],
+                               "y_units": metric["y_axis_units"], "result": values})
+    
+    with open("/app/output.json", "w", newline="") as file:
         file.write(json.dumps(metrics_values))
 
-    if args.generate_graphs == "True":
-        with open("output.html", "w", newline="") as file:
+    if args.generate_graphs:
+        with open("/app/output.html", "w", newline="") as file:
             out_buff.seek(0)
             shutil.copyfileobj(out_buff, file)
 
     out_buff.close()
 
-
 if __name__ == "__main__":
-    main()
+    config_file_path = get_config_file_argument()
+    if not os.path.exists(config_file_path):
+        print(f"Error: The file {config_file_path} does not exist.")
+        sys.exit(1)
+    main(config_file_path)
