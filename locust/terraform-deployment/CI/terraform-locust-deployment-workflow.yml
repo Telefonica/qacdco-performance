@@ -32,6 +32,11 @@ on:
         required: true
         description: "EXECUTION_NAME"
         default: "Execution"
+      KEEP_ENVIRONMENT:
+        type: string
+        required: true
+        description: "KEEP_ENVIRONMENT"
+        default: "false"
       PERFORMANCE_REPORTER_ENV:
         type: string
         required: true
@@ -95,3 +100,16 @@ jobs:
           export PERFORMANCE_REPORTER_ENV=${{ github.event.inputs.PERFORMANCE_REPORTER_ENV }}
           curl -X GET http://$LOCUST_MASTER_IP:8089/csv_results.csv > locust_results.csv
           source ./locust/scripts/uploadtoreporter.sh
+      - name: Delete Locust Azure Resource
+        run: |
+          az rest -m delete \
+            --url 'https://management.azure.com/subscriptions/${{ github.event.inputs.AZURE_SUBSCRIPTION_ID }}/resourcegroups/test-locust?api-version=2021-04-01'
+        if: always() && github.event.inputs.KEEP_ENVIRONMENT != 'true'
+      - name: Logout Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
+        if: always()
