@@ -16,7 +16,7 @@ RUN apt-get install -y --no-install-recommends ca-certificates curl apt-transpor
 
 WORKDIR /app
 
-COPY test/performance/locust .
+COPY locust/ .
 RUN ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -q -N ""
 
 CMD az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID && bash scripts/create-locust-infra.sh
