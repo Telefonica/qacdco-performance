@@ -1,0 +1,93 @@
+env.JOB_NAME = "${env.JOB_NAME.replaceFirst('.+?/', '').replace('%2F', '/')}"
+url_repo = 'https://github.com/Telefonica/qacdco-performance'
+class_repo = 'GithubWeb'
+
+def jenkinsInstance = [
+    perfMasterInstance:"qa-cdo-perf"
+]
+
+/* Define project properties */
+
+def projectProperties = [
+        buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '30')),
+        disableConcurrentBuilds(),
+        parameters([
+            string(defaultValue: "master", description: 'Performance Project branch', name: 'GIT_BRANCH'),
+            string(defaultValue: "AZURE_SUBSCRIPTION_ID", description: "Azure Subscription ID", name: "AZURE_SUBSCRIPTION_ID"),
+            string(defaultValue: "Standard_D2ds_v5", description: "Locust Workers VM size", name: "WORKER_VM_SIZE"),
+            string(defaultValue: "Standard_E2ds_v5", description: "Locust Master VM size", name: "MASTER_VM_SIZE"),
+            string(defaultValue: "3", description: "Number of Worker VMs", name: "WORKERS"),
+            string(defaultValue: "100", description: "Number of Virtual Users", name: "VIRTUAL_USERS"),
+            string(defaultValue: "15", description: "Virtual Users creation rate (x per second)", name: "RAMP_UP"),
+            string(defaultValue: "4800", description: "Test Duration in seconds", name: "TEST_DURATION"),
+            string(defaultValue: "EXECUTION_NAME", description: "Name of the execution in the Performance Reporter", name: "EXECUTION_NAME"),
+            string(defaultValue: "false", description: "Keep Locust Environment after text execution", name: "KEEP_ENVIRONMENT"),
+            string(defaultValue: "pre", description: "Performance reporter environment", name: "PERFORMANCE_REPORTER_ENV"),
+        ])
+]
+properties(projectProperties)
+node (jenkinsInstance["perfMasterInstance"]) {
+    wrap([$class: 'AnsiColorBuildWrapper']) {
+        try{
+            stage('Clean') {
+                cleanWs notFailBuild: true
+            }
+            stage('Checkout') {
+                // Running job info
+                echo "job name: ${env.JOB_NAME}"
+                echo "branch name: ${GIT_BRANCH}"
+                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+                checkout([
+					$class: 'GitSCM',
+					userRemoteConfigs: [[
+						credentialsId: 'df82f4c6-562c-4f38-b77d-6d2fc4213688', //CONTINT user id to github
+						refspec: "+refs/heads/${GIT_BRANCH}:refs/remotes/origin/${GIT_BRANCH}",  // Where you search branch to checkout
+						url: url_repo
+						]],				
+					branches: [[name: "refs/heads/${GIT_BRANCH}"]],
+					browser: [$class: class_repo, repoUrl: url_repo],
+					doGenerateSubmoduleConfigurations: false,
+					extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'Framework'], 
+					    [$class: 'CloneOption', timeout: 20, noTags: false, honorRefspec: true]],
+					submoduleCfg: []
+					])
+            }
+            stage('Deploy Locust'){
+                AZURE_CLIENT_ID = credentials('AZURE_CLIENT_ID')
+                AZURE_CLIENT_SECRET = credentials('AZURE_CLIENT_SECRET')
+                AZURE_TENANT_ID = credentials('AZURE_TENANT_ID')
+                docker build -t locust-deployer -f locust/terraform-deployment/dockerfile .
+                docker run --rm \
+                  -e AZURE_CLIENT_ID \
+                  -e AZURE_CLIENT_SECRET \
+                  -e AZURE_TENANT_ID \
+                  -e AZURE_SUBSCRIPTION_ID \
+                  -e TF_VAR_resource_group=test-locust \
+                  -e TF_VAR_workers=$WORKERS \
+                  -e TF_VAR_vm_master_size=$MASTER_VM_SIZE \
+                  -e TF_VAR_vm_worker_size=WORKER_VM_SIZE\
+                  --name locust-deployer locust-deployer
+                docker rmi locust-deployer
+                }
+            stage('Run Locust Test'){
+                try {
+                    az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                    az account set --subscription $AZURE_SUBSCRIPTION_ID
+                    LOCUST_MASTER_IP=$(az vm show -d -g test-locust -n LocustMaster-vm --query publicIps -o tsv)
+
+                    curl -X POST -F 'user_count=$USER_COUNT' -F 'spawn_rate=$RAMP_UP' http://$LOCUST_MASTER_IP:8089/swarm
+                    sleep $TEST_DURATION
+                    curl -X GET http://$LOCUST_MASTER_IP:8089/stop
+                    curl -X GET http://$LOCUST_MASTER_IP:8089/csv_results.csv > locust_results.csv
+                    source ./locust/scripts/uploadtoreporter.sh
+                }
+                catch(error){
+                    currentBuild.result = 'FAILURE'
+                }
+			}
+        }
+        catch (error){
+            echo "Pipeline failed!"
+        }
+    }
+}
