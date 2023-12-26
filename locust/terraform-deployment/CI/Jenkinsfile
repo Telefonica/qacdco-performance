@@ -25,6 +25,7 @@ def projectProperties = [
             string(defaultValue: "pre", description: "Performance reporter environment", name: "PERFORMANCE_REPORTER_ENV"),
         ])
 ]
+
 properties(projectProperties)
 node (jenkinsInstance["perfMasterInstance"]) {
     wrap([$class: 'AnsiColorBuildWrapper']) {
@@ -85,6 +86,11 @@ node (jenkinsInstance["perfMasterInstance"]) {
                     currentBuild.result = 'FAILURE'
                 }
 			}
+            stage('Delete Locust Environment'){
+                az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                az account set --subscription $AZURE_SUBSCRIPTION_ID
+                az rest -m delete --url 'https://management.azure.com/subscriptions/$AZURE_SUBSCRIPTION_ID/resourcegroups/test-locust?api-version=2021-04-01'
+            }
         }
         catch (error){
             echo "Pipeline failed!"
