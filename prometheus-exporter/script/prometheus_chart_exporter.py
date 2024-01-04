@@ -91,7 +91,6 @@ def main(config_file_path):
         values = get_metric(http_session, args.prometheus_url,
                             args.start_date, args.end_date, args.step, metric["query"])["data"]
         dataframe = to_pandas(values)
-        print("generate_graphs=", args.generate_graphs, file=sys.stderr)
         if args.generate_graphs:
             create_chart(metric["metric_name"], dataframe, out_buff, metric["y_axis_units"])
         metrics_values.append({"expr": metric["query"], "title": metric["metric_name"],
