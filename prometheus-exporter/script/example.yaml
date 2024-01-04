@@ -9,7 +9,7 @@ authentication:
 metrics:
   - query: prometheus_query_1
     metric_name: "apigw replicas"
-    units: "n replicas"
+    y_axis_units: "n replicas"
   - query: prometheus_query_2
     metric_name: "apigw replicas"
     y_axis_units: "n replicas"
