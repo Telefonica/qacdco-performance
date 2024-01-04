@@ -3,7 +3,6 @@ import io
 import json
 import requests
 import sys
-import shlex
 import shutil
 import plotly.express as px
 import os
