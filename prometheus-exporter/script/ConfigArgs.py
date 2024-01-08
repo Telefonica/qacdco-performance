@@ -28,12 +28,12 @@ class ConfigArgs:
     
     def validate_user_pass(self, value):
         if len(value.split(':')) != 2:
-            raise yaml.YAMLError(f"authentication: user_password must be in the format 'user:password'")
+            raise yaml.YAMLError("authentication: user_password must be in the format 'user:password'")
         return value
 
     def validate_auth(self, value):
         if not isinstance(value, list) or len(value) != 1:
-            raise yaml.YAMLError(f"authentication: field must be a list with exactly one dict with keys \"type\" and \"credentials\")")
+            raise yaml.YAMLError("authentication: field must be a list with exactly one dict with keys \"type\" and \"credentials\")")
         
         auth_type = value[0].get("type")
         if not auth_type:
@@ -55,16 +55,14 @@ class ConfigArgs:
     def validate_metrics(self, metrics_list):
         if not isinstance(metrics_list, list):
             raise yaml.YAMLError(f"metrics: Expected a list, but got {type(metrics_list).__name__} instead.")
-        
+        required_keys = ["query", "metric_name", "y_axis_units"]
         for metric in metrics_list:
             if not isinstance(metric, dict):
                 raise yaml.YAMLError(f"metrics: Each metric should be a dictionary, but got {type(metric).__name__} instead.")
-        
-        required_keys = ["query", "metric_name", "y_axis_units"]
-        missing_keys = [key for key in required_keys if key not in metric]
-        
-        if missing_keys:
-            raise yaml.YAMLError(f"metrics: Missing required keys {', '.join(missing_keys)} in a metric.")
+            
+            missing_keys = [key for key in required_keys if key not in metric]
+            if missing_keys:
+                raise yaml.YAMLError(f"metrics: Missing required keys {', '.join(missing_keys)} in a metric.")
         
         for key, value in metric.items():
             if not isinstance(value, str):
