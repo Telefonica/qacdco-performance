@@ -177,7 +177,7 @@ resource "null_resource" "worker_provisioner" {
 
   provisioner "remote-exec" {
     inline = [
-      "bash /home/adminuser/locust/terraform-deployment/locust-infra-setup.sh master"
+      "bash /home/adminuser/locust/terraform-deployment/locust-infra-setup.sh worker"
     ]
   }
 
