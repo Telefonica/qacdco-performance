@@ -52,7 +52,7 @@ resource "azurerm_public_ip" "worker-public-ip" {
 
 resource "azurerm_network_interface" "worker-interface" {
   count               = var.workers
-  name                = "worke-nic${count.index}"
+  name                = "worker-nic${count.index}"
   location            = "eastus2"
   resource_group_name = "${azurerm_resource_group.test-locust.name}"
 
