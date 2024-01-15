@@ -63,9 +63,8 @@ class ConfigArgs:
             missing_keys = [key for key in required_keys if key not in metric]
             if missing_keys:
                 raise yaml.YAMLError(f"metrics: Missing required keys {', '.join(missing_keys)} in a metric.")
-        
-        for key, value in metric.items():
-            if not isinstance(value, str):
-                raise yaml.YAMLError(f"metrics: For key '{key}', expected a string, but got {type(value).__name__} instead.")
+            for key, value in metric.items():
+                if not isinstance(value, str):
+                    raise yaml.YAMLError(f"metrics: For key '{key}', expected a string, but got {type(value).__name__} instead.")
 
         return metrics_list
