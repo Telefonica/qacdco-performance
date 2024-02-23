@@ -1,0 +1,16 @@
+prometheus_url: https://prometheus.example.com/metrics
+start_date: 1679359438
+end_date: 1679445838
+interval: 60
+generate_graphs: true
+authentication:
+  - type: user_password
+    credentials: pepe:pepepassword
+metrics:
+  - query: prometheus_query_1
+    metric_name: "apigw replicas"
+    y_axis_units: "n replicas"
+  - query: prometheus_query_2
+    metric_name: "apigw replicas"
+    y_axis_units: "n replicas"
+  
