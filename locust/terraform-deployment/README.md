@@ -46,4 +46,25 @@ The only requirement needed in the Runner is Docker and Docker Compose
 
 # Usage Jenkins
 
-TBD
+## 1. Put the Jenkinsfile in Your Repository
+Copy the Jenkinsfile into a folder in your repository. This will enable Jenkins to recognize and execute the pipeline.
+
+## 2. Create a New Pipeline in Jenkins and in the definition of the pipeline, select Pipeline script from SCM
+In the repository URL, put the URL of your repository and in the script path, put the path of the Jenkinsfile.
+
+## 3. Add the Required Credentials to Jenkins
+In Jenkins, go to 'Credentials' and add the following credentials:
+AZURE_CLIENT_ID: Your Azure Client ID.
+AZURE_CLIENT_SECRET: Your Azure Client Secret.
+AZURE_TENANT_ID: Your Azure Tenant ID.
+These will be used by the Terraform script to authenticate and execute actions in your Azure environment.
+
+## 4. Create Your Locust Scenario in the Scenarios Folder
+Create a scenarios folder if it doesn't exist. Write your test scenarios in this folder. These are Python scripts defining user behavior for load testing with Locust. More info [here](https://confluence.tid.es/pages/viewpage.action?pageId=73025608#id-[QPMPerf]EstrategiayMetodolog%C3%ADa-Dise%C3%B1odeescenariosdePerformanceconLocust)
+
+## 5. Run the Pipeline
+Run the pipeline in Jenkins. The pipeline will now execute, deploying your Terraform infrastructure and running the Locust tests as defined.
+
+## Requirements
+
+The only requirement needed in the Runner is Docker and Docker Compose
