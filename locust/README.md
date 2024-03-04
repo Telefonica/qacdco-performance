@@ -33,8 +33,6 @@ Performance Project
 │ docker-compose.yaml: This file defines master and worker services.
 
 ````
-## Using the Framework
-If you are interested on trying the the Locust framework before you start implementing it in your project, you can go to the perf/example branch in this repository and use the example there, it's ready to be deployed and used.
 
 ## Example Framework
 
