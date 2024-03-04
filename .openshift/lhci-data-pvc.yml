@@ -1,0 +1,15 @@
+kind: Template
+apiVersion: "template.openshift.io/v1"
+metadata:
+  name: lhci-data-pvc-template
+objects:
+  - kind: PersistentVolumeClaim
+    apiVersion: v1
+    metadata:
+      name: lhci-data-pvc
+    spec:
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: 5Gi
