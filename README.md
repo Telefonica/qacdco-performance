@@ -9,3 +9,26 @@
 
 3. Review of metrics:
     * Although our Jenkins pipeline generates graphs of results. More information and metrics can be found in the [Performance Reporter](http://qacdco.hi.inet/pre-performance/reporter/projects), to see them, go to the Performance Reporter and access the execution performed within the LOCUST project for a better analysis.
+
+# PERFORMANCE TEST
+## Test Description
+
+First you need to create a .env file with the following variables:
+
+```bash
+
+SAMPLING=1
+TEST=global.py
+HOME_PATH=/home/davidg/git/telefonica/qacdco-performance/performance
+
+
+```
+run the following command to start the test:
+
+```bash
+docker-compose --env-file .env -f docker-compose.yaml up -d --force-recreate
+
+```
+
+Use your browser to access the locust web interface at http://localhost:8089
+
