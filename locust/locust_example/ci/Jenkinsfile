@@ -68,6 +68,7 @@ node (jenkinsInstance["perfMasterInstance"]) {
                 env.TAGS = "$TAGS"
                 sh 'echo TEST=$TEST >> Framework/locust/locust_example/.env'
                 sh 'echo SAMPLING=$SAMPLING >> Framework/locust/locust_example/.env'
+                sh "echo HOME_PATH=$PWD/Framework/locust/locust_example >> Framework/locust/locust_example/.env"
                 if ("$TAGS" != 'ALL')
                 {
                     sh 'echo TAGS=$TAGS >> Framework/locust/locust_example/.env'
