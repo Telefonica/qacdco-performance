@@ -61,7 +61,7 @@ cd ./locust_example
 
 ```
 
-First you need to create a .env file with the following variables:
+Then you need to create a .env file with the following variables:
 
 > [!IMPORTANT]
 > Modify HOME_PATH variable to your working directory
