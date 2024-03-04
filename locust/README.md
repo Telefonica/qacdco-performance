@@ -54,7 +54,7 @@ If you are interested on trying the the Locust framework before you start implem
 # PERFORMANCE TEST
 ## Test Description
 
-First you need to go to the example_locust directory:
+First you need to go to the locust_example directory:
 
 ```bash
 cd ./locust_example
