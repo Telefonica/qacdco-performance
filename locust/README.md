@@ -38,7 +38,7 @@ If you are interested on trying the the Locust framework before you start implem
 
 ## Example Framework
 
-We have a simple example of locust framework on directory ```./example_locust```
+We have a simple example of locust framework on directory ```./locust_example```
 
 # EXECUTION INSTRUCTIONS
 
@@ -59,7 +59,7 @@ We have a simple example of locust framework on directory ```./example_locust```
 First you need to go to the example_locust directory:
 
 ```bash
-cd ./example_locust
+cd ./locust_example
 
 ```
 
@@ -72,7 +72,7 @@ First you need to create a .env file with the following variables:
 
 SAMPLING=1
 TEST=global.py
-HOME_PATH=/home/davidg/git/telefonica/qacdco-performance/locust/example_locust
+HOME_PATH=/home/davidg/git/telefonica/qacdco-performance/locust/locust_example
 
 
 ```
