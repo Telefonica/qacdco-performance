@@ -66,11 +66,11 @@ node (jenkinsInstance["perfMasterInstance"]) {
             }
             stage('Environment'){
                 env.TAGS = "$TAGS"
-                sh 'echo TEST=$TEST >> Framework/performance/.env'
-                sh 'echo SAMPLING=$SAMPLING >> Framework/performance/.env'
+                sh 'echo TEST=$TEST >> Framework/locust/locust_example/.env'
+                sh 'echo SAMPLING=$SAMPLING >> Framework/locust/locust_example/.env'
                 if ("$TAGS" != 'ALL')
                 {
-                    sh 'echo TAGS=$TAGS >> Framework/performance/.env'
+                    sh 'echo TAGS=$TAGS >> Framework/locust/locust_example/.env'
                 }
             }
             stage('Deployment'){
@@ -78,8 +78,8 @@ node (jenkinsInstance["perfMasterInstance"]) {
                     echo "Injector work directory cleanup..."
 				    sh "ssh ubuntu@$HOST_INJECTOR \'rm -rf /home/ubuntu/test_locust/*\'"
 					echo "Deploying injector ..."
-					sh 'scp -r Framework/performance ubuntu@$HOST_INJECTOR:/home/ubuntu/test_locust'
-					sh 'ssh ubuntu@$HOST_INJECTOR < Framework/performance/injectors/commands.txt'
+					sh 'scp -r Framework/locust/locust_example ubuntu@$HOST_INJECTOR:/home/ubuntu/test_locust'
+					sh 'ssh ubuntu@$HOST_INJECTOR < Framework/locust/locust_example/injectors/commands.txt'
 				}
 				catch(error){
 					   currentBuild.result = 'UNSTABLE'
@@ -89,7 +89,7 @@ node (jenkinsInstance["perfMasterInstance"]) {
             stage('Run performance test'){
                 try{
                     sh 'sleep 5'
-                    sh returnStdout: true , script:'sh Framework/performance/scripts/runner-injector.sh'
+                    sh returnStdout: true , script:'sh Framework/locust/locust_example/scripts/runner-injector.sh'
                 }
                 /* Catch error in test stage for notify failed test and run other stages */
                 catch(error){
@@ -101,7 +101,7 @@ node (jenkinsInstance["perfMasterInstance"]) {
                 try{
                     sh returnStdout: true , script: "curl -s http://${HOST_INJECTOR}:8089/csv_results.csv > locust_results.csv"
                     echo "+++ Query data to QA Reporter"
-                    sh returnStdout: true , script: 'sh Framework/performance/scripts/upload_to_reporter.sh'
+                    sh returnStdout: true , script: 'sh Framework/locust/locust_example/scripts/upload_to_reporter.sh'
                 }
                 /* Catch error in test stage for notify failed test and run other stages */
                 catch(error){
