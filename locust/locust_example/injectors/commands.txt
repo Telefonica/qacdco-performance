@@ -1,0 +1,1 @@
+docker-compose --env-file /home/ubuntu/test_locust/performance/.env -f /home/ubuntu/test_locust/performance/docker-compose.yaml up -d --force-recreate
