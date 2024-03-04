@@ -38,7 +38,7 @@ If you are interested on trying the the Locust framework before you start implem
 
 ## Example Framework
 
-We have a simple example of locust framework on directory ```./locust_example```
+If you are interested on trying the the Locust framework before you start implementing it in your project we have a simple example of locust framework on directory ```./locust_example```
 
 # EXECUTION INSTRUCTIONS
 
