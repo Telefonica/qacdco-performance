@@ -188,6 +188,7 @@ def upload_to_reporter(app: Flask, jmeter_listener: JmeterListener):
                     'execution_name': request.form['PERFORMANCE_EXECUTION_NAME'],
                     'release_version': request.form['RELEASE_VERSION'],
                     'reporter_url': request.form['QA_REPORTER_URL'],
+                    'type': request.form['TYPE'],
                     'sampling': request.form.get('SAMPLING')
                 }
                 if not form_data['sampling']:
@@ -211,7 +212,7 @@ def upload_to_reporter(app: Flask, jmeter_listener: JmeterListener):
                     'project-id': project_id,
                     'module': form_data['module'],
                     'name': form_data['execution_name'],
-                    'type': 'load',
+                    'type': form_data['type'],
                     'version': form_data['release_version'],
                     'date': execution_date
                 }
