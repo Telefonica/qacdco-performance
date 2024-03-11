@@ -9,6 +9,8 @@ from time import time
 from locust.runners import WorkerRunner
 import os
 import random
+import requests
+from flask import Blueprint, request, jsonify, make_response, Flask, render_template
 
 class JmeterListener:
     """
@@ -170,3 +172,65 @@ class JmeterListener:
         self.csv_results += data["csv_results"]
         if len(self.csv_results) >= self.flush_size:
             self._flush_to_log()
+    def _clear_results(self):
+        self.csv_results = []
+
+def upload_to_reporter(app: Flask, jmeter_listener: JmeterListener):
+    upload_blueprint = Blueprint('upload', __name__, template_folder='../templates')
+
+    @upload_blueprint.route('/upload', methods=['GET', 'POST'])
+    def upload():
+        if request.method == 'POST':
+            try:
+                form_data = {
+                    'project_name': request.form['PERFORMANCE_PROJECT_NAME'],
+                    'module': request.form['MODULE'],
+                    'execution_name': request.form['PERFORMANCE_EXECUTION_NAME'],
+                    'release_version': request.form['RELEASE_VERSION'],
+                    'reporter_url': request.form['QA_REPORTER_URL'],
+                    'sampling': request.form.get('SAMPLING')
+                }
+                if not form_data['sampling']:
+                    form_data['sampling'] = 1
+                print(form_data['sampling'])
+                results_csv = requests.get('http://localhost:8089/csv_results.csv')
+                if results_csv.status_code == 200:
+                    with open('results.csv', 'w') as file:
+                        file.write(results_csv.text)
+                else:
+                    raise Exception("Failed to download results.csv")
+
+                # Create a new execution
+                project_response = requests.get(f'{form_data["reporter_url"]}/api/1.0/projects/?name={form_data["project_name"]}')
+                project_response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
+                project = project_response.json()
+                project_id = project[0]['project_id']
+
+                execution_date = datetime.now().strftime('%Y-%m-%d %H:%M')
+                execution_data = {
+                    'project-id': project_id,
+                    'module': form_data['module'],
+                    'name': form_data['execution_name'],
+                    'type': 'load',
+                    'version': form_data['release_version'],
+                    'date': execution_date
+                }
+                execution_response = requests.post(f'{form_data["reporter_url"]}/api/1.0/executions/', data=execution_data)
+                execution_response.raise_for_status()
+                execution = execution_response.json()
+                execution_id = execution['execution']['execution_id']
+
+                with open('results.csv', 'rb') as file:
+                    files = {'data': file}
+                    upload_response = requests.post(f'{form_data["reporter_url"]}/api/1.0/executions/{execution_id}/csv_loader/', data={'execution-id': execution_id, 'input-type': 'jmeter-csv', 'sampling': form_data['sampling']}, files=files)
+                    upload_response.raise_for_status()
+
+                os.remove('results.csv')
+                jmeter_listener._clear_results()
+                return "Execution submitted successfully."
+            except Exception as e:
+                return f"Error: {str(e)}"
+        else:
+            return render_template('upload_form.html')
+
+    app.register_blueprint(upload_blueprint)
