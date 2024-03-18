@@ -7,12 +7,14 @@ ASSISTANT_ID="asst_51JqlsIIkcTftOFCuOWEnO0d"
 AZURE_OPENAI_API_VERSION="2024-02-15-preview"
 
 ```
-run the following command to start the test:
+run the following commands to start the test (modify absolute path to the assistants folder in your local machine):
 
 ```bash
-docker-compose --env-file .env -f docker-compose.yaml up -d --force-recreate
+docker build -t performanceanalizer:0.0.1 .
+docker rm -f performanceanalizer ;docker  run -v $HOME/git/telefonica/qacdco-performance/ia/AzureOpenAI/Assistants:/app --name performanceanalizer  performanceanalizer:0.0.1
+
 
 ```
+These comands will create an image with 2 requests using novum performance test example inside assistant.
 
-Use your browser to access the locust web interface at http://localhost:8089
 
