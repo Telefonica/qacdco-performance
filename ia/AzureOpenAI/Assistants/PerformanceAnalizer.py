@@ -91,6 +91,8 @@ print(thread_messages.model_dump_json(indent=2))
 run = client.beta.threads.runs.create(
   thread_id=thread.id,
   assistant_id=assistant.id,
+  instructions="Sacame las graficas en dark mode y agrupame el eje x en intervalos de 5 segundos y "
+               "calculas el percentil 95 de ese intervalo y no me contabilices el primer minuto"
 )
 
 
@@ -120,4 +122,5 @@ image_file_id = data['data'][0]['content'][0]['image_file']['file_id']
 print(image_file_id)
 content = client.files.content(image_file_id)
 
-image= content.write_to_file("load_test_account.png")
+image = content.write_to_file("load_test_account.png")
+

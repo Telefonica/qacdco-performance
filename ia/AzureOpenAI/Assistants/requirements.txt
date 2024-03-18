@@ -1,0 +1,3 @@
+openai
+IPython
+python-dotenv
