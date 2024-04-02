@@ -1,0 +1,115 @@
+name: Locust Load Test Azure VMs
+
+on:
+  workflow_dispatch:
+    inputs:
+      AZURE_SUBSCRIPTION_ID:
+        type: string
+        required: true
+        description: "AZURE_SUBSCRIPTION_ID"
+      WORKER_VM_SIZE:
+        type: string
+        required: false
+        description: "WORKER_VM_SIZE"
+        default: "Standard_D2ds_v5"
+      MASTER_VM_SIZE:
+        type: string
+        required: false
+        description: "MASTER_VM_SIZE"
+        default: "Standard_E2ds_v5"
+      WORKERS:
+        type: string
+        required: true
+        description: "WORKERS"
+        default: "3"
+      TEST_DURATION:
+        type: string
+        required: true
+        description: "TEST_DURATION"
+        default: "4800"
+      EXECUTION_NAME:
+        type: string
+        required: true
+        description: "EXECUTION_NAME"
+        default: "Execution"
+      KEEP_ENVIRONMENT:
+        type: string
+        required: true
+        description: "KEEP_ENVIRONMENT"
+        default: "false"
+      PERFORMANCE_REPORTER_ENV:
+        type: string
+        required: true
+        description: "PERFORMANCE_REPORTER_ENV"
+        default: "pre"
+
+env:
+  AZURE_REGION: eastus2
+
+jobs:
+  performance_test:
+    name: "Capacity Load Test"
+    runs-on: [self-hosted]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: |
+           {
+              "clientId": "${{ vars.AZURE_CLIENT_ID }}",
+              "clientSecret":"${{ vars.AZURE_CLIENT_SECRET }}",
+              "subscriptionId":"${{ github.event.inputs.AZURE_SUBSCRIPTION_ID }}",
+              "tenantId":"${{ vars.AZURE_TENANT_ID }}",
+              "resourceManagerEndpointUrl":"https://management.azure.com/"
+            }
+
+      - name: Deploy Locust
+        run: |
+          docker build -t locust-deployer -f locust/terraform-deployment/dockerfile .
+          docker run --rm \
+            -e AZURE_CLIENT_ID="${{ vars.AZURE_CLIENT_ID }}" \
+            -e AZURE_CLIENT_SECRET="${{ vars.AZURE_CLIENT_SECRET }}" \
+            -e AZURE_TENANT_ID="${{ vars.AZURE_TENANT_ID }}" \
+            -e AZURE_SUBSCRIPTION_ID="${{ github.event.inputs.AZURE_SUBSCRIPTION_ID }}" \
+            -e TF_VAR_resource_group=test-locust \
+            -e TF_VAR_workers=${{ github.event.inputs.WORKERS }} \
+            -e TF_VAR_vm_master_size=${{ github.event.inputs.MASTER_VM_SIZE }} \
+            -e TF_VAR_vm_worker_size=${{ github.event.inputs.WORKER_VM_SIZE }} \
+            --name locust-deployer locust-deployer
+          docker rmi locust-deployer
+
+      - name: Run Locust Test
+        run: |
+          LOCUST_MASTER_IP=$(az vm show -d -g test-locust -n LocustMaster-vm --query publicIps -o tsv)
+          export TEST_DURATION=${{ github.event.inputs.TEST_DURATION }}
+          export WORKERS=${{ github.event.inputs.WORKERS }}
+
+          curl -X POST -F 'user_count=${{ env.VIRTUAL_USERS }}' -F 'spawn_rate=${{ env.RAMP_UP }}' http://$LOCUST_MASTER_IP:8089/swarm
+          sleep $TEST_DURATION
+          curl -X GET http://$LOCUST_MASTER_IP:8089/stop
+
+      - name: Sampling and Uploading CSV to Performance Reporter
+        run: |
+          LOCUST_MASTER_IP=$(az vm show -d -g test-locust -n LocustMaster-vm --query publicIps -o tsv)
+          export CSVDIR=${{github.workspace}}
+          export EXECUTION_NAME=${{ github.event.inputs.EXECUTION_NAME }}
+          export PERFORMANCE_REPORTER_ENV=${{ github.event.inputs.PERFORMANCE_REPORTER_ENV }}
+          curl -X GET http://$LOCUST_MASTER_IP:8089/csv_results.csv > locust_results.csv
+          source ./locust/scripts/uploadtoreporter.sh
+      - name: Delete Locust Azure Resource
+        run: |
+          az rest -m delete \
+            --url 'https://management.azure.com/subscriptions/${{ github.event.inputs.AZURE_SUBSCRIPTION_ID }}/resourcegroups/test-locust?api-version=2021-04-01'
+        if: always() && github.event.inputs.KEEP_ENVIRONMENT != 'true'
+      - name: Logout Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
+        if: always()
