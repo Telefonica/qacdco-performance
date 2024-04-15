@@ -1,0 +1,94 @@
+#!groovy
+
+/* Copyright Telefonica Digital
+CDO QA Team <qacdo@telefonica.com>
+Support: WT-Jenkins */
+
+env.JOB_NAME = "${env.JOB_NAME.replaceFirst('.+?/', '').replace('%2F', '/')}"
+url_repo = 'git@github.com:Telefonica/qacdco-tools.git'
+class_repo = 'GithubWeb'
+
+/* Set your docker image, you can set several different images*/
+def jenkinsInstance = [
+    qacdoMasterInstance:"qa-cdo"
+]
+
+/* Define project properties */
+def executeJob = true
+def projectProperties = [
+        buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '30')),
+        disableConcurrentBuilds(),
+        parameters([
+            string(defaultValue: "master", description: 'Branch to build', name: 'GIT_BRANCH'),
+            string(defaultValue: "ip_address", description: 'Address of the injector', name: 'INJECTOR_HOST'),
+            string(defaultValue: "ubuntu", description: 'User of the injector', name: 'INJECTOR_USER')
+        ])
+]
+properties(projectProperties)
+
+node (jenkinsInstance["qacdoMasterInstance"]) {
+    
+    wrap([$class: 'AnsiColorBuildWrapper']) {
+        try{
+            
+            stage('Clean') {
+                cleanWs notFailBuild: true
+            }
+            stage('Checkout') {
+                // Running job info
+                echo "job name: ${env.JOB_NAME}"
+                echo "branch name: ${GIT_BRANCH}"
+                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '${GIT_BRANCH}']],
+                    browser: [$class: class_repo, repoUrl: url_repo],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[
+                        credentialsId: 'df82f4c6-562c-4f38-b77d-6d2fc4213688', //CONTINT user id to github
+                        refspec: '+refs/heads/*:refs/remotes/origin/*',  // Where you search branch to checkout
+                        url: url_repo
+                        ]]
+                    ])
+            }
+            stage('Build'){
+                echo "Building Performance Test Project ..."
+            }
+            stage('Environment'){
+                    
+                    sshagent(credentials: ['df82f4c6-562c-4f38-b77d-6d2fc4213688']) {
+                        echo "Preparing environment if needed ..."
+                        echo "        Installing ansible"
+                        sh "pip install ansible --upgrade --user"
+                        sh "echo '[jMeter_nodes]\n perf0 ansible_host=${INJECTOR_HOST} ansible_port=22 ansible_user=${INJECTOR_USER}' > ./wt_performance/ansible/deploy-jmeter-slave/inventories/host"
+                        sh "cat ./wt_performance/ansible/deploy-jmeter-slave/inventories/host"
+
+                    }
+                    
+            }
+            stage('Deployment'){
+                try{
+                    echo "Deploying injector ..."
+                    sh "~/.local/bin/ansible-playbook ./wt_performance/ansible/deploy-jmeter-slave/deploy-jmeter-slave.yml -i ./wt_performance/ansible/deploy-jmeter-slave/inventories/host"
+                }
+                catch(error){
+                       currentBuild.result = 'UNSTABLE'
+                }
+            
+            }
+            
+        }
+        catch (error){
+            echo "Pipeline failed!"
+            currentBuild.result = 'UNSTABLE'
+
+        }
+        finally {
+
+           
+
+        }
+    }
+}

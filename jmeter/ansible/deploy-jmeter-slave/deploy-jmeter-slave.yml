@@ -1,0 +1,114 @@
+# Copyright (c) Telefonica Digital - CDO QA Team
+
+- name: Script for the deployment of a performance injector in a host
+  hosts: jMeter_nodes # Host where deploy the injector
+
+  tasks:
+
+    - name: Install pip
+      become: yes
+      apt:
+        name: python-pip
+
+    - name: Install docker-py package
+      become: yes
+      pip:
+        name: docker-py
+        state: latest
+
+    - name: Install Docker
+      become: yes
+      apt:
+        name: "docker.io"
+        state: latest
+
+    - name: Add dcip contint key to authorized keys
+      authorized_key:
+        user: ubuntu
+        state: present
+        key: '{{ item }}'
+      with_file:
+        - ssh_keys/dcip_contint.pub
+
+    # Change location to the end
+    - name: Check that the ssh keys doesn't exist
+      stat:
+        path: ~/.ssh/id_rsa.pub
+      register: ssh_exists
+
+    - name: Create private and public ssh keys
+      command: ssh-keygen -q -f "~/.ssh/id_rsa" -t rsa -C "qacdo-injector-node" -N ''
+      when: ssh_exists.stat.exists == False
+
+    - name: Get contents of public ssh key
+      become: no
+      command: cat ~/.ssh/id_rsa.pub
+      register: id_rsa_pub
+
+    - name: Viewing the contents
+      debug:
+        msg: "{{id_rsa_pub.stdout}}"
+
+    - name: Running the container
+      become: yes
+      become_user: root
+      docker_container:
+        name: injector
+        image: performancecdo/jmeter_slave_4g
+        state: started
+        network_mode: host
+        restart: yes
+        restart_policy: unless-stopped
+        volumes:
+          /opt/qacdo/performance/shared_folder:/resources
+
+    - name: Create directory to store the injector
+      become: yes
+      file:
+        path: /opt/qacdo/performance
+        state: directory
+
+    - name: Create directory to share with the injector
+      become: yes
+      file:
+        path: /opt/qacdo/performance/shared_folder
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: 0775
+
+    - name: Install injector scripts to retrieve machine measures
+      become: yes
+      synchronize:
+        src: ../../../machine_measures_retrieval
+        dest: /opt/qacdo/performance/
+
+
+    - name: Install script dependencies
+      become: yes
+      pip:
+        requirements: requirements.txt
+        chdir: /opt/qacdo/performance/machine_measures_retrieval
+
+    - name: Install sar
+      become: yes
+      apt:
+        name: sysstat
+
+    - name: Deactivate sar if it was still active
+      become: yes
+      replace:
+        path: /etc/default/sysstat
+        regexp: '^ENABLED="true"'
+        replace: ENABLED="false"
+
+    - name: Set cron frequency to 1 minute
+      become: yes
+      replace:
+        path: /etc/cron.d/sysstat
+        regexp: '^5-55/10 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1 '
+        replace: 5-55/1 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1
+
+    - name: Restart sar to update changes
+      become: yes
+      command: /etc/init.d/sysstat restart
