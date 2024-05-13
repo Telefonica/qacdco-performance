@@ -5,4 +5,4 @@ In the locust folder, there is the Locust-oriented framework and the necessary i
 Templates with basic structures are available to start developing performance scenarios, as well as examples of performance pipelines.
 
 
-Please, have a look to the documentation in the following link [Performance Testing Framework](https://confluence.tid.es/pages/viewpage.action?pageId=73025608) .This document will give to you a complete overview of the performance testing process, main performance testing tasks, and a guideline about the performance framework based on Jmeter or Locust.
+Please, have a look to the documentation in the following link [Performance Testing Activities](https://confluence.tid.es/display/CTO/%5BQPM-Perf%5D+Actividades+Performance) .This document will give to you a complete overview of the performance testing process, main performance testing activities, and a guideline about the performance framework based on Jmeter and Locust.
