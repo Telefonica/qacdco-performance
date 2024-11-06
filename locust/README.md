@@ -1,6 +1,6 @@
 # Locust performance testing framework
 
-This Performance Testing Framework uses Locust, an opensource tool based on Python, with which we can easily create our own performance scenarios. You can access the Documentation and Locust Source Code [here](https://locust.io/). Below is a summarized guide of the Framework, a step-by-step guide to set it up can be found in [Confluence](https://confluence.tid.es/pages/viewpage.action?pageId=73025608).
+This Performance Testing Framework uses Locust, an opensource tool based on Python, with which we can easily create our own performance scenarios. You can access the Documentation and Locust Source Code [here](https://locust.io/). Below is a summarized guide of the Framework, a step-by-step guide to set it up can be found in [Confluence](https://confluence.tid.es/display/CTO/%5BQPM-Perf%5D+Performance+framework).
 
 ## Structure
 ````
