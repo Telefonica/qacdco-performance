@@ -1,17 +1,14 @@
 import time
-import os
 from openai import AzureOpenAI
 from IPython.display import clear_output
-from dotenv import load_dotenv
 import json
 
-load_dotenv()
 
 client = AzureOpenAI(
     # Replace with your Azure OpenAI .env file
     # The .env file should contain the following variables:
-    api_key=os.environ["AZURE_OPENAI_API_KEY"],
-    api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+    api_key="cf56ce6ffb6d418f9c56793b9e7830ed",
+    api_version="2024-10-01-preview",
     azure_endpoint="https://chatgpt-qa-licenses.openai.azure.com/"
 )
 
@@ -19,34 +16,30 @@ client = AzureOpenAI(
 start_time = time.time()
 
 # Replace with your assistant ID from .env file
-assistant_id = os.environ["ASSISTANT_ID"]
+assistant_id = "asst_yZPBn70DcKVh4YCRdYP10KVr"
 
 # Create an assistant
 '''assistant = client.beta.assistants.create(
     name="Data Visualization",
-    instructions=f"Analiza todo el fichero csv y saca una lista seleccionable por el usuario con todos los eventos unicos de la columna label."
-                 f"Despues pediras al usuario que seleccione los eventos que desea "
-                 f"De todos los eventos previamente seleccionados sacarás una grafica donde el eje X es la columna timestamp en formato epoch en milisegundos, y el eje y es columna elapsed en milisegundos"
-                 f"La grafica debera ser con puntos"
-                 f"Añade una leyenda en la grafica con cada nombre",
+    instructions=f"Sigue estos pasos:",
+                 f"Selecciona todos los eventos cuyo label contenga AccountDashboardModuleAgent.1.getAccountModules_success y  Settings.3.getUserSettingsConfig  coge los datos de las columas timeStamp y elapsed",
+                 f"sacame una grafica donde cada label sea una linea, con puntos (no me unas los puntos con lineas), del numero de eventos por segundo del punto anterior a lo largo del tiempo(timeStamp), agrupamelo en intervalos de 5 segundos , quitando los primeros 2 minutos de la prueba,  En el eje x pon la fecha en oblicuo para evitar que se solapen. En el eje y calculame los TPS(transacciones por segundo) teniendo en cuenta que lo has agrupado en intervalos de 5 segundos. Los colores de cada label son rojo y verde.",
+                 f"sacame otra grafica con las mismas carateristicas del punto anterior, pero donde se calcule el percentil 90 del campo elapsed agrupado cada 5 segundos. El campo elapsed esta en milisegundos. Dibuja ademas  una linea horizontal de puntos de color rojo para p90=1000, este será un umbral maximo del p90 que tendras en cuenta en las conclusiones finales. Añade esta linea a la leyenda con el titulo de umbal maximo.",
     tools=[{"type": "code_interpreter"}],
     model="gpt-4-1106Preview"  # You must replace this value with the deployment name for your model.
 )'''
 
 assistant = client.beta.assistants.retrieve(assistant_id)
-
 print(assistant.model_dump_json(indent=2))
 
 thread = client.beta.threads.create()
 print(thread)
-
 
 message = client.beta.threads.messages.create(
     thread_id=thread.id,
     role="user",
     content="Ejecuta"
 )
-
 thread_messages = client.beta.threads.messages.list(thread.id)
 print(thread_messages.model_dump_json(indent=2))
 
@@ -54,7 +47,6 @@ print(thread_messages.model_dump_json(indent=2))
 run = client.beta.threads.runs.create(
   thread_id=thread.id,
   assistant_id=assistant.id,
-  #instructions="Ejecuta"
 )
 
 
@@ -79,11 +71,10 @@ print("Elapsed time: {} minutes {} seconds".format(int((time.time() - start_time
                                                    int((time.time() - start_time) % 60)))
 print(messages.model_dump_json(indent=2))
 # Run the assistant
-
 message = client.beta.threads.messages.create(
     thread_id=thread.id,
     role="user",
-    content="2 y 4"
+    content="Ejecuta"
 )
 thread_messages = client.beta.threads.messages.list(thread.id)
 print(thread_messages.model_dump_json(indent=2))
@@ -91,8 +82,7 @@ print(thread_messages.model_dump_json(indent=2))
 run = client.beta.threads.runs.create(
   thread_id=thread.id,
   assistant_id=assistant.id,
-  instructions="Sacame las graficas en dark mode y agrupame el eje x en intervalos de 5 segundos y "
-               "calculas el percentil 95 de ese intervalo y no me contabilices el primer minuto"
+  instructions="Ejecuta instrucciones"
 )
 
 
@@ -115,12 +105,28 @@ messages = client.beta.threads.messages.list(
 print(f'Status: {status}')
 print("Elapsed time: {} minutes {} seconds".format(int((time.time() - start_time) // 60),
                                                    int((time.time() - start_time) % 60)))
-print(messages.model_dump_json(indent=2))
+print(f'Resultado del prompt {messages.model_dump_json(indent=2)}')
 data = json.loads(messages.model_dump_json(indent=2))  # Load JSON data into a Python object
-image_file_id = data['data'][0]['content'][0]['image_file']['file_id']
 
-print(image_file_id)
-content = client.files.content(image_file_id)
+os.makedirs("img", exist_ok=True)
+os.makedirs("docs", exist_ok=True)
 
-image = content.write_to_file("load_test_account.png")
+for message in data["data"]:
+    # Verificar si hay contenido que tenga un tipo `image_file` con un `file_id`
+    for content_item in message.get("content", []):
+        if content_item.get("type") == "image_file" and "image_file" in content_item:
+            file_id = content_item["image_file"]["file_id"]
+            content = client.files.content(file_id)
+            filename = f"img/{file_id}.png"
+            content.write_to_file(filename)
+            print(f"Imagen guardada en: {filename}")
 
+    # Verificar si hay un archivo adjunto en `attachments`
+    if "attachments" in message and message["attachments"]:
+        for attachment in message["attachments"]:
+            file_id = attachment["file_id"]
+            # Obtener el contenido del archivo usando el cliente y guardarlo
+            content = client.files.content(file_id)
+            filename = f"docs/{file_id}.docx"
+            content.write_to_file(filename)
+            print(f"Documento guardado en: {filename}")
