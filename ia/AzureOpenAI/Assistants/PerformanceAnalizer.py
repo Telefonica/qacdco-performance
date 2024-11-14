@@ -4,7 +4,6 @@ from IPython.display import clear_output
 import json
 import os
 
-
 client = AzureOpenAI(
     # Replace with your Azure OpenAI .env file
     # The .env file should contain the following variables:
@@ -13,11 +12,34 @@ client = AzureOpenAI(
     azure_endpoint="https://chatgpt-qa-licenses.openai.azure.com/"
 )
 
-
 start_time = time.time()
 
 # Replace with your assistant ID from .env file
 assistant_id = "asst_yZPBn70DcKVh4YCRdYP10KVr"
+
+# Paso 1: Listar todos los archivos del asistente
+files = client.files.list()  # Esto debería obtener todos los archivos actualmente disponibles en el asistente
+
+# Paso 2: Borrar todos los archivos
+for file in files:  # Itera directamente sobre el objeto files
+    file_id = file.id  # Accede a la ID del archivo directamente como un atributo
+    client.files.delete(file_id)  # Eliminar el archivo usando su ID
+    print(f"Archivo con ID {file_id} eliminado.")
+
+# Paso 3: Subir un nuevo archivo
+file_path = "locust_results.csv"  # Especifica la ruta de tu nuevo archivo
+with open(file_path, "rb") as f:
+    content = client.files.create(file=f, purpose="assistants")  # Ajusta el propósito si es necesario
+    print(f"Nuevo archivo subido con ID {content.id}")
+
+# Paso 4: Añadir el fichero subido al assistant
+client.beta.assistants.update(
+    assistant_id = assistant_id,
+    tool_resources = {"code_interpreter":{"file_ids":[content.id]}}
+)
+print(f"Archivo con ID {content.id} añadido al asistente.")
+
+
 
 # Create an assistant
 '''assistant = client.beta.assistants.create(
