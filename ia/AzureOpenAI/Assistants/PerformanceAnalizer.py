@@ -2,6 +2,7 @@ import time
 from openai import AzureOpenAI
 from IPython.display import clear_output
 import json
+import os
 
 
 client = AzureOpenAI(
@@ -32,9 +33,11 @@ assistant_id = "asst_yZPBn70DcKVh4YCRdYP10KVr"
 assistant = client.beta.assistants.retrieve(assistant_id)
 print(assistant.model_dump_json(indent=2))
 
+# Create a thread
 thread = client.beta.threads.create()
 print(thread)
 
+# Add a user question to the thread
 message = client.beta.threads.messages.create(
     thread_id=thread.id,
     role="user",
@@ -48,8 +51,6 @@ run = client.beta.threads.runs.create(
   thread_id=thread.id,
   assistant_id=assistant.id,
 )
-
-
 status = run.status
 print(status)
 
@@ -83,23 +84,6 @@ run = client.beta.threads.runs.create(
   thread_id=thread.id,
   assistant_id=assistant.id,
   instructions="Ejecuta instrucciones"
-)
-
-
-status = run.status
-print(status)
-
-while status not in ["completed", "cancelled", "expired", "failed"]:
-    time.sleep(5)
-    run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
-    print("Elapsed time: {} minutes {} seconds".format(int((time.time() - start_time) // 60),
-                                                       int((time.time() - start_time) % 60)))
-    status = run.status
-    print(f'Status: {status}')
-    clear_output(wait=True)
-
-messages = client.beta.threads.messages.list(
-  thread_id=thread.id
 )
 
 print(f'Status: {status}')
