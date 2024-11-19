@@ -93,25 +93,6 @@ print(f'Status: {status}')
 print("Elapsed time: {} minutes {} seconds".format(int((time.time() - start_time) // 60),
                                                    int((time.time() - start_time) % 60)))
 print(messages.model_dump_json(indent=2))
-# Run the assistant
-message = client.beta.threads.messages.create(
-    thread_id=thread.id,
-    role="user",
-    content="Ejecuta"
-)
-thread_messages = client.beta.threads.messages.list(thread.id)
-print(thread_messages.model_dump_json(indent=2))
-
-run = client.beta.threads.runs.create(
-  thread_id=thread.id,
-  assistant_id=assistant.id,
-  instructions="Ejecuta instrucciones"
-)
-
-print(f'Status: {status}')
-print("Elapsed time: {} minutes {} seconds".format(int((time.time() - start_time) // 60),
-                                                   int((time.time() - start_time) % 60)))
-print(f'Resultado del prompt {messages.model_dump_json(indent=2)}')
 data = json.loads(messages.model_dump_json(indent=2))  # Load JSON data into a Python object
 
 os.makedirs("img", exist_ok=True)
