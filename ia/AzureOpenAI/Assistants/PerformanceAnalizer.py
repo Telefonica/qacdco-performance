@@ -1,119 +1,156 @@
+
+
 import time
-from openai import AzureOpenAI
-from IPython.display import clear_output
 import json
 import os
-
-client = AzureOpenAI(
-    # Replace with your Azure OpenAI .env file
-    # The .env file should contain the following variables:
-    api_key="cf56ce6ffb6d418f9c56793b9e7830ed",
-    api_version="2024-10-01-preview",
-    azure_endpoint="https://chatgpt-qa-licenses.openai.azure.com/"
-)
-
-start_time = time.time()
-
-# Replace with your assistant ID from .env file
-assistant_id = "asst_yZPBn70DcKVh4YCRdYP10KVr"
-
-# Paso 1: Listar todos los archivos del asistente
-files = client.files.list()  # Esto debería obtener todos los archivos actualmente disponibles en el asistente
-
-# Paso 2: Borrar todos los archivos
-for file in files:  # Itera directamente sobre el objeto files
-    file_id = file.id  # Accede a la ID del archivo directamente como un atributo
-    client.files.delete(file_id)  # Eliminar el archivo usando su ID
-    print(f"Archivo con ID {file_id} eliminado.")
-
-# Paso 3: Subir un nuevo archivo
-file_path = "locust_results.csv"  # Especifica la ruta de tu nuevo archivo
-with open(file_path, "rb") as f:
-    content = client.files.create(file=f, purpose="assistants")  # Ajusta el propósito si es necesario
-    print(f"Nuevo archivo subido con ID {content.id}")
-
-# Paso 4: Añadir el fichero subido al assistant
-client.beta.assistants.update(
-    assistant_id = assistant_id,
-    tool_resources = {"code_interpreter":{"file_ids":[content.id]}}
-)
-print(f"Archivo con ID {content.id} añadido al asistente.")
+from openai import AzureOpenAI
+from IPython.display import clear_output
 
 
+class AzureAssistantManager:
+    """
+    Manages Azure OpenAI Assistant operations such as file handling,
+    assistant updates, thread creation, and execution monitoring.
+    """
 
-# Create an assistant
-'''assistant = client.beta.assistants.create(
-    name="Data Visualization",
-    instructions=f"Sigue estos pasos:",
-                 f"Selecciona todos los eventos cuyo label contenga AccountDashboardModuleAgent.1.getAccountModules_success y  Settings.3.getUserSettingsConfig  coge los datos de las columas timeStamp y elapsed",
-                 f"sacame una grafica donde cada label sea una linea, con puntos (no me unas los puntos con lineas), del numero de eventos por segundo del punto anterior a lo largo del tiempo(timeStamp), agrupamelo en intervalos de 5 segundos , quitando los primeros 2 minutos de la prueba,  En el eje x pon la fecha en oblicuo para evitar que se solapen. En el eje y calculame los TPS(transacciones por segundo) teniendo en cuenta que lo has agrupado en intervalos de 5 segundos. Los colores de cada label son rojo y verde.",
-                 f"sacame otra grafica con las mismas carateristicas del punto anterior, pero donde se calcule el percentil 90 del campo elapsed agrupado cada 5 segundos. El campo elapsed esta en milisegundos. Dibuja ademas  una linea horizontal de puntos de color rojo para p90=1000, este será un umbral maximo del p90 que tendras en cuenta en las conclusiones finales. Añade esta linea a la leyenda con el titulo de umbal maximo.",
-    tools=[{"type": "code_interpreter"}],
-    model="gpt-4-1106Preview"  # You must replace this value with the deployment name for your model.
-)'''
+    def __init__(self, api_key, api_version, azure_endpoint, assistant_id):
+        self.client = AzureOpenAI(
+            api_key=api_key,
+            api_version=api_version,
+            azure_endpoint=azure_endpoint,
+        )
+        self.assistant_id = assistant_id
+        self.start_time = time.time()
 
-assistant = client.beta.assistants.retrieve(assistant_id)
-print(assistant.model_dump_json(indent=2))
+    def list_and_delete_files(self):
+        """
+        Lists all files associated with the assistant and deletes them.
+        """
+        files = self.client.files.list()
+        for file in files:
+            file_id = file.id
+            self.client.files.delete(file_id)
+            print(f"File with ID {file_id} deleted.")
 
-# Create a thread
-thread = client.beta.threads.create()
-print(thread)
+    def upload_file(self, file_path, purpose="assistants"):
+        """
+        Uploads a new file to Azure OpenAI for a specific purpose.
+        :param file_path: Path to the file to be uploaded.
+        :param purpose: Purpose of the uploaded file (default: 'assistants').
+        :return: Uploaded file object.
+        """
+        with open(file_path, "rb") as f:
+            content = self.client.files.create(file=f, purpose=purpose)
+            print(f"New file uploaded with ID {content.id}")
+            return content
 
-# Add a user question to the thread
-message = client.beta.threads.messages.create(
-    thread_id=thread.id,
-    role="user",
-    content="Ejecuta"
-)
-thread_messages = client.beta.threads.messages.list(thread.id)
-print(thread_messages.model_dump_json(indent=2))
+    def associate_file_with_assistant(self, file_id):
+        """
+        Associates an uploaded file with the assistant.
+        :param file_id: ID of the file to be associated.
+        """
+        self.client.beta.assistants.update(
+            assistant_id=self.assistant_id,
+            tool_resources={"code_interpreter": {"file_ids": [file_id]}},
+        )
+        print(f"File with ID {file_id} added to the assistant.")
 
-# Run the assistant
-run = client.beta.threads.runs.create(
-  thread_id=thread.id,
-  assistant_id=assistant.id,
-)
-status = run.status
-print(status)
+    def execute_assistant(self, instructions="Ejecuta las intrucciones"):
+        """
+        Creates and executes a thread to run the assistant.
+        :param instructions: Instructions to execute (default: 'Execute instructions').
+        :return: Thread ID for the execution.
+        """
+        assistant = self.client.beta.assistants.retrieve(self.assistant_id)
+        print(assistant.model_dump_json(indent=2))
 
-while status not in ["completed", "cancelled", "expired", "failed"]:
-    time.sleep(5)
-    run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
-    print("Elapsed time: {} minutes {} seconds".format(int((time.time() - start_time) // 60),
-                                                       int((time.time() - start_time) % 60)))
-    status = run.status
-    print(f'Status: {status}')
-    clear_output(wait=True)
+        thread = self.client.beta.threads.create()
+        print(f"Thread created: {thread.id}")
 
-messages = client.beta.threads.messages.list(
-  thread_id=thread.id
-)
+        message = self.client.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content="Ejecuta",
+        )
+        thread_messages = self.client.beta.threads.messages.list(thread.id)
+        print(thread_messages.model_dump_json(indent=2))
 
-print(f'Status: {status}')
-print("Elapsed time: {} minutes {} seconds".format(int((time.time() - start_time) // 60),
-                                                   int((time.time() - start_time) % 60)))
-print(messages.model_dump_json(indent=2))
-data = json.loads(messages.model_dump_json(indent=2))  # Load JSON data into a Python object
+        run = self.client.beta.threads.runs.create(
+            thread_id=thread.id,
+            assistant_id=self.assistant_id
+        )
+        self.monitor_execution(thread.id, run.id)
+        print(f'Resultado del prompt {run.model_dump_json(indent=2)}')
+        return thread.id  # Return the thread ID for later use.
 
-os.makedirs("img", exist_ok=True)
-os.makedirs("docs", exist_ok=True)
+    def monitor_execution(self, thread_id, run_id):
+        """
+        Monitors the execution of an assistant run.
+        :param thread_id: ID of the thread.
+        :param run_id: ID of the run.
+        """
+        status = "running"
+        while status not in ["completed", "cancelled", "expired", "failed"]:
+            time.sleep(5)
+            run = self.client.beta.threads.runs.retrieve(
+                thread_id=thread_id, run_id=run_id
+            )
+            elapsed_time = time.time() - self.start_time
+            print(f"Elapsed time: {elapsed_time // 60:.0f} minutes {elapsed_time % 60:.0f} seconds")
+            status = run.status
+            print(f"Status: {status}")
+            clear_output(wait=True)
 
-for message in data["data"]:
-    # Verificar si hay contenido que tenga un tipo `image_file` con un `file_id`
-    for content_item in message.get("content", []):
-        if content_item.get("type") == "image_file" and "image_file" in content_item:
-            file_id = content_item["image_file"]["file_id"]
-            content = client.files.content(file_id)
-            filename = f"img/{file_id}.png"
-            content.write_to_file(filename)
-            print(f"Imagen guardada en: {filename}")
+    def download_results(self, thread_id):
+        """
+        Downloads results generated during the assistant run.
+        :param thread_id: ID of the thread.
+        """
+        os.makedirs("img", exist_ok=True)
+        os.makedirs("docs", exist_ok=True)
 
-    # Verificar si hay un archivo adjunto en `attachments`
-    if "attachments" in message and message["attachments"]:
-        for attachment in message["attachments"]:
-            file_id = attachment["file_id"]
-            # Obtener el contenido del archivo usando el cliente y guardarlo
-            content = client.files.content(file_id)
-            filename = f"docs/{file_id}.docx"
-            content.write_to_file(filename)
-            print(f"Documento guardado en: {filename}")
+        messages = self.client.beta.threads.messages.list(thread_id=thread_id)
+        data = json.loads(messages.model_dump_json(indent=2))
+        print(f"messages: {messages.model_dump_json(indent=2)}")
+        for message in data["data"]:
+            for content_item in message.get("content", []):
+                if content_item.get("type") == "image_file" and "image_file" in content_item:
+                    file_id = content_item["image_file"]["file_id"]
+                    content = self.client.files.content(file_id)
+                    filename = f"img/{file_id}.png"
+                    content.write_to_file(filename)
+                    print(f"Image saved at: {filename}")
+
+            if "attachments" in message and message["attachments"]:
+                for attachment in message["attachments"]:
+                    file_id = attachment["file_id"]
+                    content = self.client.files.content(file_id)
+                    filename = f"docs/{file_id}.docx"
+                    content.write_to_file(filename)
+                    print(f"Document saved at: {filename}")
+
+
+if __name__ == "__main__":
+    # Replace with your actual values
+    API_KEY = "cf56ce6ffb6d418f9c56793b9e7830ed"
+    API_VERSION = "2024-10-01-preview"
+    AZURE_ENDPOINT = "https://chatgpt-qa-licenses.openai.azure.com/"
+    ASSISTANT_ID = "asst_yZPBn70DcKVh4YCRdYP10KVr"
+
+    # Initialize manager
+    manager = AzureAssistantManager(API_KEY, API_VERSION, AZURE_ENDPOINT, ASSISTANT_ID)
+
+    # Step 1: List and delete all files
+    manager.list_and_delete_files()
+
+    # Step 2: Upload a new file
+    uploaded_file = manager.upload_file("locust_results.csv")
+
+    # Step 3: Associate the uploaded file with the assistant
+    manager.associate_file_with_assistant(uploaded_file.id)
+
+    # Step 4: Execute the assistant and monitor execution
+    thread_id = manager.execute_assistant()  # Save the returned thread_id
+
+    # Step 5: Download results using the correct thread ID
+    manager.download_results(thread_id=thread_id)
