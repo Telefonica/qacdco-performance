@@ -11,10 +11,10 @@ run the following commands to start the test (modify absolute path to the assist
 
 ```bash
 docker build -t performanceanalizer:0.0.1 .
-docker rm -f performanceanalizer ;docker  run -v $HOME/git/telefonica/qacdco-performance/ia/AzureOpenAI/Assistants:/app --name performanceanalizer  performanceanalizer:0.0.1
-
+docker rm -f performanceanalizer; docker run -v .:/app --name performanceanalizer -e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY docker.tuenti.io/qsys/performanceanalizer:0.0.1
 
 ```
-These commands will create an image with 2 requests using novum performance test example inside assistant.
+where $AZURE_OPENAI_API_KEY must be defined in your environment variables.
+These commands will create an image with 2 requests using Novum performance test example inside assistant.
 
 
