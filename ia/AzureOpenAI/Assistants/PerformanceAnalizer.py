@@ -1,5 +1,3 @@
-
-
 import time
 import json
 import os
@@ -132,11 +130,10 @@ class AzureAssistantManager:
 
 if __name__ == "__main__":
     # Replace with your actual values
-    API_KEY = "cf56ce6ffb6d418f9c56793b9e7830ed"
+    API_KEY = os.environ["AZURE_OPENAI_API_KEY"]
     API_VERSION = "2024-10-01-preview"
     AZURE_ENDPOINT = "https://chatgpt-qa-licenses.openai.azure.com/"
     ASSISTANT_ID = "asst_yZPBn70DcKVh4YCRdYP10KVr"
-
     # Initialize manager
     manager = AzureAssistantManager(API_KEY, API_VERSION, AZURE_ENDPOINT, ASSISTANT_ID)
 
