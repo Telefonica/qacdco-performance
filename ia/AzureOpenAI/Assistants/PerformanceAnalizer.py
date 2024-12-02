@@ -53,10 +53,9 @@ class AzureAssistantManager:
         )
         print(f"File with ID {file_id} added to the assistant.")
 
-    def execute_assistant(self, instructions="Ejecuta las intrucciones"):
+    def execute_assistant(self, labels, percentile):
         """
         Creates and executes a thread to run the assistant.
-        :param instructions: Instructions to execute (default: 'Execute instructions').
         :return: Thread ID for the execution.
         """
         assistant = self.client.beta.assistants.retrieve(self.assistant_id)
@@ -68,7 +67,11 @@ class AzureAssistantManager:
         message = self.client.beta.threads.messages.create(
             thread_id=thread.id,
             role="user",
-            content="Ejecuta",
+            content=f"""
+                Ignora las labels y el percentil que tienes en las instrucciones por defecto, y ejecuta con los siguientes parámetros:
+                - Labels: '{labels}'
+                - Percentil: '{percentile}'
+            """
         )
         thread_messages = self.client.beta.threads.messages.list(thread.id)
         print(thread_messages.model_dump_json(indent=2))
@@ -134,6 +137,8 @@ if __name__ == "__main__":
     API_VERSION = "2024-10-01-preview"
     AZURE_ENDPOINT = "https://chatgpt-qa-licenses.openai.azure.com/"
     ASSISTANT_ID = "asst_yZPBn70DcKVh4YCRdYP10KVr"
+    LABELS = os.environ("LABELS")
+    PERCENTILE = os.environ.get("PERCENTILE", "90")
     # Initialize manager
     manager = AzureAssistantManager(API_KEY, API_VERSION, AZURE_ENDPOINT, ASSISTANT_ID)
 
@@ -147,7 +152,7 @@ if __name__ == "__main__":
     manager.associate_file_with_assistant(uploaded_file.id)
 
     # Step 4: Execute the assistant and monitor execution
-    thread_id = manager.execute_assistant()  # Save the returned thread_id
+    thread_id = manager.execute_assistant(LABELS, PERCENTILE)  # Save the returned thread_id
 
     # Step 5: Download results using the correct thread ID
     manager.download_results(thread_id=thread_id)
