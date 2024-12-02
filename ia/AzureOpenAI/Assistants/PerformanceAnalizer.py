@@ -137,9 +137,11 @@ if __name__ == "__main__":
     API_VERSION = "2024-10-01-preview"
     AZURE_ENDPOINT = "https://chatgpt-qa-licenses.openai.azure.com/"
     ASSISTANT_ID = "asst_yZPBn70DcKVh4YCRdYP10KVr"
-    LABELS = os.environ("LABELS")
+    LABELS = os.environ["LABELS"]
     PERCENTILE = os.environ.get("PERCENTILE", "90")
     # Initialize manager
+    if not LABELS:
+        raise ValueError("LABELS está vacío. Saliendo del programa.")
     manager = AzureAssistantManager(API_KEY, API_VERSION, AZURE_ENDPOINT, ASSISTANT_ID)
 
     # Step 1: List and delete all files
