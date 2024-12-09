@@ -53,7 +53,7 @@ class AzureAssistantManager:
         )
         print(f"File with ID {file_id} added to the assistant.")
 
-    def execute_assistant(self, labels, percentile):
+    def execute_assistant(self, labels, percentile, threshold):
         """
         Creates and executes a thread to run the assistant.
         :return: Thread ID for the execution.
@@ -71,6 +71,7 @@ class AzureAssistantManager:
                 Ignora las labels y el percentil que tienes en las instrucciones por defecto, y ejecuta con los siguientes parámetros:
                 - Labels: '{labels}'
                 - Percentil: '{percentile}'
+                - Umbral: '{threshold}'
             """
         )
         thread_messages = self.client.beta.threads.messages.list(thread.id)
@@ -139,6 +140,7 @@ if __name__ == "__main__":
     ASSISTANT_ID = "asst_yZPBn70DcKVh4YCRdYP10KVr"
     LABELS = os.environ["LABELS"]
     PERCENTILE = os.environ.get("PERCENTILE", "90")
+    THRESHOLD = os.environ.get("THRESHOLD", "1000")
     # Initialize manager
     if not LABELS:
         raise ValueError("LABELS está vacío. Saliendo del programa.")
@@ -154,7 +156,7 @@ if __name__ == "__main__":
     manager.associate_file_with_assistant(uploaded_file.id)
 
     # Step 4: Execute the assistant and monitor execution
-    thread_id = manager.execute_assistant(LABELS, PERCENTILE)  # Save the returned thread_id
+    thread_id = manager.execute_assistant(LABELS, PERCENTILE, THRESHOLD)  # Save the returned thread_id
 
     # Step 5: Download results using the correct thread ID
     manager.download_results(thread_id=thread_id)
