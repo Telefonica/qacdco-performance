@@ -21,6 +21,7 @@ Sigue estos pasos:
 export AZURE_OPENAI_API_KEY=sk-xxxxxxxxxxxxxx
 export LABELS="label-1, label-2" # put the LABELS you want, separated by a comma and a space
 export PERCENTILE="90" # you can choose the percentile with which to generate the graphs by changing the value of this variable
+export THRESHOLD="1000" # you can choose the threshold with which to generate the graphs by changing the value of this variable
 ```
 
 3.  Copy locust_results.csv file with locust results for a specific test in  content root folder
@@ -33,7 +34,7 @@ cp locust_results.csv ia/AzureOpenAI/Assistant
 ```bash
 
 docker build -t performanceanalizer:0.0.1 .
-docker rm -f performanceanalizer; docker run -v .:/app --name performanceanalizer -e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY -e LABELS=$LABELS -e PERCENTILE=$PERCENTILE performanceanalizer:0.0.1
+docker rm -f performanceanalizer; docker run -v .:/app --name performanceanalizer -e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY -e LABELS=$LABELS -e PERCENTILE=$PERCENTILE -e THRESHOLD=$THRESHOLD performanceanalizer:0.0.1
 ```
 These commands will create 2 images in img folder using Novum performance test example inside assistant, and a doc in docs folder with the results of the test.
 
