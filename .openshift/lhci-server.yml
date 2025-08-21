@@ -81,7 +81,7 @@ parameters:
   - name: CONTAINER_IMAGE
     displayName: Docker image
     description: Docker image url
-    value: dockerhub.hi.inet/qacdco/qa-performance/lhci-server
+    value: harbor.tid.es/qacdo-hub/qa-performance/lhci-server
   - name: CONTAINER_IMAGE_VERSION
     displayName: Docker image version
     description: Docker image version
