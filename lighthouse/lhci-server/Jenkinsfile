@@ -30,7 +30,7 @@ node('master') {
             stage('Prepare env') {
                 sh "cp -r ./lighthouse/lhci-server/docker ."
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'ldap_user', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-                    sh "docker login -u $USERNAME -p $PASSWORD dockerhub.hi.inet"
+                    sh "docker login -u '$USERNAME' -p $PASSWORD dockerhub.hi.inet"
                 }
             }
 
