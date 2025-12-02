@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm-proxy
+    volumes:
+      - ./config/litellm_config.yaml:/app/config.yaml
+    ports:
+      - "4000:4000"
+    command: --config /app/config.yaml --detailed_debug
+    restart: unless-stopped
+
+  mcp-mysql:
+    build:
+      context: ./mcps/mysql
+      dockerfile: Dockerfile
+    container_name: mcp-mysql-server
+    ports:
+      - "8000:8000"
+    environment:
+      - MYSQL_HOST=10.95.132.195
+      - MYSQL_PORT=3306
+      - MYSQL_USER=qawebservices
+      - MYSQL_PASS=DUMMY_KEY
+      - MYSQL_DB=qaperformance
+      - ALLOW_INSERT_OPERATION=true
+      - ALLOW_UPDATE_OPERATION=true
+      - ALLOW_DELETE_OPERATION=false
+    restart: unless-stopped
+
+  mcp-performance-reporter:
+    build:
+      context: ./mcps/performance-reporter
+      dockerfile: Dockerfile
+    container_name: mcp-performance-reporter-server
+    ports:
+      - "8001:8001"
+    environment:
+      - DJANGO_API_BASE=http://qacdco.hi.inet
+      - API_TIMEOUT=30
+    restart: unless-stopped
+
+  mcp-prometheus:
+    build:
+      context: ./mcps/prometheus
+      dockerfile: Dockerfile
+    container_name: mcp-prometheus-server
+    ports:
+      - "8002:8002"
+    environment:
+      - PROMETHEUS_URL=http://qacdo-performance-prometheus-qacdo-services-pre.apps.ocp-epg.hi.inet/
+      - PROMETHEUS_URL_SSL_VERIFY=false
+      - PROMETHEUS_DISABLE_LINKS=false
+    restart: unless-stopped
+
+  jupyter-lab:
+    build:
+      context: ./jupyter
+      dockerfile: Dockerfile
+    container_name: jupyter-lab
+    ports:
+      - "8888:8888"
+    volumes:
+      - jupyter-data:/home/jovyan/work
+      - ./jupyter/notebooks:/home/jovyan/work/notebooks
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    restart: unless-stopped
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    volumes:
+      - open-webui:/app/backend/data
+    ports:
+      - "3000:8080"
+    environment:
+      - OPENAI_API_BASE_URL=http://litellm:4000
+      - OPENAI_API_KEY=sk-1234
+      - ENABLE_OAUTH_SIGNUP=False
+      - ENABLE_SIGNUP=True
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+      # Code Interpreter configuration
+      - ENABLE_CODE_EXECUTION=true
+      - CODE_EXECUTION_ENGINE=jupyter
+      - CODE_EXECUTION_JUPYTER_URL=http://jupyter-lab:8888
+      - CODE_EXECUTION_JUPYTER_TIMEOUT=30
+    restart: unless-stopped
+    depends_on:
+      - litellm
+      - mcp-mysql
+      - mcp-performance-reporter
+      - mcp-prometheus
+      - jupyter-lab
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  open-webui:
+  jupyter-data:

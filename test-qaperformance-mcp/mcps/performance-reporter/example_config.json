@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "qacdco_performance_reporter": {
+      "command": "python",
+      "args": ["/path/to/mcp-performance-reporter/server.py"],
+      "env": {
+        "DJANGO_API_BASE": "http://your-django-server.com:8000",
+        "API_TIMEOUT": "30"
+      }
+    }
+  }
+}

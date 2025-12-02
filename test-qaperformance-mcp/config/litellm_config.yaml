@@ -1,0 +1,9 @@
+model_list:
+  - model_name: gpt-4
+    litellm_params:
+       model: azure/gpt-4.1
+       api_base: "https://chatgpt-qa-licenses.openai.azure.com/"
+       api_key: "DUMMY_KEY"
+       api_version: "2025-01-01-preview"
+
+#model: azure/gpt-4.1
